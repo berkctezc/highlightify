@@ -63,8 +63,13 @@ public sealed class InstagramHighlightFetcher
 				TryScanJson(fragment, sourceLabel, results, seen);
 		}
 
-		foreach (Match match in PairFallbackRegex.Matches(html))
-			AddCandidate(results, seen, match.Groups["title"].Value, match.Groups["artist"].Value, null, sourceLabel);
+		// The fallback regex can accidentally pair fields from adjacent JSON objects.
+		// Only use it when the structured script scan found no candidates at all.
+		if (results.Count == 0)
+		{
+			foreach (Match match in PairFallbackRegex.Matches(html))
+				AddCandidate(results, seen, match.Groups["title"].Value, match.Groups["artist"].Value, null, sourceLabel);
+		}
 
 		return results;
 	}

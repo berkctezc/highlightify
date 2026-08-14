@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>Highlightify.Web</RootNamespace>
+        <UserSecretsId>Highlightify.Web-local</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Highlightify.Core\Highlightify.Core.csproj" />
+        <ProjectReference Include="..\Highlightify.Integrations\Highlightify.Integrations.csproj" />
+    </ItemGroup>
+
+</Project>

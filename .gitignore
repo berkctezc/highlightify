@@ -182,6 +182,11 @@ FakesAssemblies/
 *.GhostDoc.xml
 .ntvs_analysis.dat
 node_modules/
+.pnpm-store/
+web/.vite/
+web/dist/
+src/Highlightify.Web/wwwroot/
+src/Highlightify.Web/App_Data/
 *.plg
 *.opt
 *.vbw

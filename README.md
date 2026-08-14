@@ -1,68 +1,143 @@
-# highlightify
+# Highlightify
 
-`highlightify` is a small .NET CLI that:
+Highlightify turns the music in Instagram Story Highlights into a reviewed Spotify playlist.
 
-1. Reads Instagram story highlight pages or saved HTML exports.
-2. Extracts music metadata from the highlight payload.
-3. Searches Spotify for matching tracks.
-4. Adds the matches to a playlist.
+The repository includes two clients:
 
-## Requirements
+- A responsive web app built with React, TypeScript, Vite, Tailwind CSS and shadcn/ui primitives.
+- The original .NET command-line client.
 
-- yt-dlp
-- A Spotify developer app with a client id.
-- A Spotify account that can create or edit playlists.
-- Instagram cookies if the highlight is private or requires login.
+The ASP.NET Core backend reuses the existing Instagram extraction logic, manages Spotify PKCE sessions, performs track matching, creates playlists, and stores the most recent import history locally.
 
-## Usage
+## Web app
 
-```bash
-dotnet run --project highlightify -- \
-  --highlight "17876436264678750" \ # highlight-id from url
-  --spotify-client-id "34ab6eeec71b46e2ab27bb021fdc95bc" \ # this is the dev app id you need to use
-  --playlist-name "IG Highlights" \ # name of playlist
-  --instagram-cookies-from-browser "firefox:/path/to/profile" #also chromium/safari etc. supported
+### Requirements
+
+- .NET 10 SDK
+- Node.js 22+
+- pnpm 11+
+- `yt-dlp` for Highlights that require a local Instagram browser session
+- A Spotify developer application
+
+Add this redirect URI to the Spotify developer application:
+
+```text
+http://127.0.0.1:5086/api/auth/spotify/callback
 ```
 
-Parameters:
+Configure the Spotify client ID with .NET user secrets:
 
 ```bash
+dotnet user-secrets set \
+  --project src/Highlightify.Web/Highlightify.Web.csproj \
+  Spotify:ClientId "YOUR_SPOTIFY_CLIENT_ID"
+```
+
+Environment variables are also supported:
+
+```bash
+export SPOTIFY_CLIENT_ID="YOUR_SPOTIFY_CLIENT_ID"
+export SPOTIFY_REDIRECT_URI="http://127.0.0.1:5086/api/auth/spotify/callback"
+export HIGHLIGHTIFY_FRONTEND_URL="http://127.0.0.1:5173"
+```
+
+Install dependencies and start both the API and Vite server:
+
+```bash
+cd web
+pnpm install
+pnpm dev:full
+```
+
+Open [http://127.0.0.1:5173](http://127.0.0.1:5173).
+
+### Production-style local run
+
+Build the frontend into the ASP.NET Core static web root, then run the API:
+
+```bash
+cd web
+pnpm build:full
+cd ..
+dotnet run --project src/Highlightify.Web/Highlightify.Web.csproj --no-build
+```
+
+Open [http://127.0.0.1:5086](http://127.0.0.1:5086).
+
+### Web flow
+
+1. Paste one or more Instagram Highlight URLs or upload saved HTML exports.
+2. Optionally select a local browser session for private Highlights.
+3. Review the Spotify match, confidence, and alternatives for every extracted song.
+4. Select an existing playlist or create a private/public playlist.
+5. Open the completed playlist directly in Spotify.
+
+Raw Instagram cookies are never accepted by the web API. When browser access is selected, `yt-dlp` reads the chosen profile locally. Import history is stored in `src/Highlightify.Web/App_Data` and is ignored by Git.
+
+## Architecture
+
+```text
+web/                          React + Vite SPA
+src/Highlightify.Web/         ASP.NET Core API and local web host
+src/Highlightify.Core/        Shared domain models and source resolution
+src/Highlightify.Integrations Instagram and Spotify integrations
+src/Highlightify.Application/ Original CLI orchestration
+src/Highlightify.Console/     CLI entry point
+tests/Highlightify.Tests/     .NET extraction and domain tests
+```
+
+The frontend and backend are deliberately separated so the same web interface can later be packaged with Tauri for macOS and Windows without rebuilding the product UI.
+
+## Verification
+
+```bash
+dotnet test highlightify.sln --nologo -m:1 -nr:false
+
+cd web
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
+```
+
+## CLI
+
+The existing CLI remains available:
+
+```bash
+dotnet run --project src/Highlightify.Console -- \
+  --highlight "HIGHLIGHT_ID" \
+  --spotify-client-id "YOUR_SPOTIFY_CLIENT_ID" \
+  --playlist-name "IG Highlights" \
+  --instagram-cookies-from-browser "firefox:/path/to/profile"
+```
+
+```text
 Usage:
   highlightify --highlight <id> [--highlight <id> ...] --spotify-client-id <id> [options]
   highlightify --html <file> [--html <file> ...] --spotify-client-id <id> [options]
 
 Required:
-  --spotify-client-id <id>     Spotify app client id
+  --spotify-client-id <id>     Spotify app client ID
 
 Highlight input:
-  --highlight <id>             Instagram highlight ID to fetch
-  --html <file>                Local HTML export to parse instead of fetching a URL
-  --instagram-cookie <value>    Raw Cookie header for Instagram requests
-  --instagram-cookie-file <f>   File containing raw Cookie header or Netscape cookie lines
-  --instagram-cookie-path <f>   Firefox profile directory or cookies.sqlite file
-  --instagram-cookies-from-browser <spec>  Browser source like firefox or firefox:/path/to/profile (preferred)
+  --highlight <id>             Instagram Highlight ID or URL
+  --html <file>                Saved HTML export
+  --instagram-cookie <value>   Raw Cookie header (CLI only)
+  --instagram-cookie-file <f>  Cookie header or Netscape cookie file (CLI only)
+  --instagram-cookie-path <f>  Firefox profile or cookies.sqlite path
+  --instagram-cookies-from-browser <spec>
+                               Browser source such as firefox or firefox:/profile/path
 
 Spotify output:
-  --playlist-name <name>       Playlist name to create or reuse; defaults to "Instagram Highlights"
-  --playlist-id <id>           Existing playlist id to append to
-  --redirect-uri <uri>         OAuth redirect URI; defaults to http://127.0.0.1:54321/callback/
-  --no-browser                 Print auth URL instead of opening a browser
+  --playlist-name <name>       Playlist name; defaults to Instagram Highlights
+  --playlist-id <id>           Existing playlist ID to append to
+  --redirect-uri <uri>         OAuth callback; defaults to 127.0.0.1:54321
+  --no-browser                 Print the authorization URL
 
 Other:
-  --dry-run                    Print matches without modifying Spotify
-  --help, -h                   Show this help
+  --dry-run                    Print candidates without changing Spotify
+  --help, -h                   Show help
 ```
 
-### Environment variables
-
-- `SPOTIFY_CLIENT_ID`
-- `SPOTIFY_REDIRECT_URI`
-- `HIGHLIGHTIFY_PLAYLIST_NAME`
-- `HIGHLIGHTIFY_PLAYLIST_ID`
-- `INSTAGRAM_COOKIE`
-- `INSTAGRAM_COOKIE_FILE`
-
-## Notes
-
-- Spotify authentication uses PKCE and a localhost callback.
-- Instagram page formats change often, so song extraction is best-effort and may need tuning for your account data.
+Instagram payload formats change frequently, so extraction is intentionally best-effort and covered by regression fixtures.
