@@ -33,24 +33,24 @@
 :root {
   color-scheme: dark;
   --radius: 0.9rem;
-  --background: #080a09;
-  --foreground: #f7f8f4;
-  --card: #111411;
-  --card-foreground: #f7f8f4;
-  --popover: #181b18;
-  --popover-foreground: #f7f8f4;
-  --primary: #d9ff68;
-  --primary-foreground: #101506;
-  --secondary: #1a1d1a;
-  --secondary-foreground: #f7f8f4;
-  --muted: #1a1d1a;
-  --muted-foreground: #9da39c;
-  --accent: #ff8063;
-  --accent-foreground: #1b0803;
+  --background: #121212;
+  --foreground: #ffffff;
+  --card: #181818;
+  --card-foreground: #ffffff;
+  --popover: #282828;
+  --popover-foreground: #ffffff;
+  --primary: #1ed760;
+  --primary-foreground: #041007;
+  --secondary: #282828;
+  --secondary-foreground: #ffffff;
+  --muted: #282828;
+  --muted-foreground: #a7a7a7;
+  --accent: #b49bc8;
+  --accent-foreground: #160e1c;
   --destructive: #e95050;
   --border: rgba(255, 255, 255, 0.08);
   --input: rgba(255, 255, 255, 0.08);
-  --ring: #d9ff68;
+  --ring: #1ed760;
 }
 
 * {
@@ -69,18 +69,16 @@ body {
   min-height: 100vh;
   margin: 0;
   overflow-x: hidden;
-  background:
-    radial-gradient(circle at 74% -12%, rgba(217, 255, 104, 0.11), transparent 34rem),
-    radial-gradient(circle at -8% 48%, rgba(255, 128, 99, 0.055), transparent 28rem),
-    var(--background);
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  font-weight: 500;
 }
 
 button,
 input,
 textarea {
-  font: inherit;
+  font-family: inherit;
 }
 
 button,
@@ -88,8 +86,18 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary) 85%, white);
+  outline-offset: 3px;
+}
+
 ::selection {
-  background: rgba(217, 255, 104, 0.28);
+  background: rgba(30, 215, 96, 0.32);
   color: #fff;
 }
 
@@ -109,23 +117,71 @@ a {
   background-clip: padding-box;
 }
 
-.app-grid {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: linear-gradient(to bottom, black, transparent 75%);
-}
-
 .text-balance {
   text-wrap: balance;
 }
 
-.glass-panel {
-  background: linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
-  backdrop-filter: blur(22px);
+.type-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  line-height: 1rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.type-landing-display {
+  font-size: clamp(3rem, 7vw, 6.5rem);
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: -0.065em;
+  text-wrap: balance;
+}
+
+.type-display {
+  font-size: clamp(2.5rem, 5.2vw, 4.75rem);
+  font-weight: 800;
+  line-height: 0.96;
+  letter-spacing: -0.06em;
+  text-wrap: balance;
+}
+
+.type-page-title {
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  text-wrap: balance;
+}
+
+.type-section-title {
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.type-body {
+  color: var(--muted-foreground);
+  font-size: clamp(0.875rem, 1.4vw, 1rem);
+  font-weight: 500;
+  line-height: 1.75;
+}
+
+.landing-art-mask {
+  mask-image: radial-gradient(ellipse 70% 68% at 50% 48%, black 58%, transparent 100%);
 }
 
 .safe-bottom {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

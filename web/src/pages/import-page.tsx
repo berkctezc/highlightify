@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { motion } from "motion/react"
-import { AlertTriangle, ArrowLeft, CheckCircle2, ExternalLink, RefreshCw, Search, Sparkles } from "lucide-react"
+import { ArrowClockwiseIcon, ArrowLeftIcon, ArrowSquareOutIcon, CheckCircleIcon, MagnifyingGlassIcon, WarningIcon } from "@/components/icons"
 import { Link, useLocation, useParams } from "react-router-dom"
 import { toast } from "sonner"
 
@@ -8,10 +8,11 @@ import { api } from "@/api/client"
 import type { ImportJob, ImportStatus } from "@/api/types"
 import { ImportProgress } from "@/components/import/import-progress"
 import { MatchReview } from "@/components/import/match-review"
+import { SpotifyConnectButton } from "@/components/spotify-connect-button"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { useSpotifyActions, useSpotifyConnection } from "@/hooks/use-spotify"
+import { useSpotifyConnection } from "@/hooks/use-spotify"
 
 const activeStatuses: ImportStatus[] = ["queued", "reading", "matching", "exporting"]
 
@@ -20,7 +21,6 @@ export function ImportPage() {
   const location = useLocation()
   const queryClient = useQueryClient()
   const spotify = useSpotifyConnection()
-  const spotifyActions = useSpotifyActions()
   const job = useQuery({
     queryKey: ["import", id],
     queryFn: ({ signal }) => api.getImport(id!, signal),
@@ -48,9 +48,9 @@ export function ImportPage() {
       <div className="mx-auto max-w-2xl py-10 sm:py-20">
         <Card className="overflow-hidden text-center">
           <CardContent className="p-7 sm:p-12">
-            <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-primary/10 text-primary"><Search className="size-7" /></span>
+            <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-primary/10 text-primary"><MagnifyingGlassIcon className="size-7" weight="duotone" /></span>
             <Badge className="mt-6" variant="secondary">{job.data.tracks.length} müzik bulundu</Badge>
-            <h2 className="mt-4 text-3xl font-extrabold tracking-[-0.045em]">Spotify eşleşmeleri hazır değil.</h2>
+            <h2 className="type-page-title mt-4">Spotify eşleşmeleri hazır değil.</h2>
             <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted-foreground">
               {spotify.data?.connected
                 ? "Hesabın bağlı. Bulunan müzikleri Spotify kataloğuyla eşleştirmeyi başlatabilirsin."
@@ -59,13 +59,13 @@ export function ImportPage() {
             <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
               {spotify.data?.connected ? (
                 <Button size="lg" onClick={() => retryMatching.mutate()} disabled={retryMatching.isPending}>
-                  {retryMatching.isPending ? <RefreshCw className="animate-spin" /> : <Sparkles />}
+                  {retryMatching.isPending ? <ArrowClockwiseIcon className="animate-spin" /> : <MagnifyingGlassIcon weight="bold" />}
                   Eşleştirmeyi başlat
                 </Button>
               ) : (
-                <Button size="lg" onClick={() => spotifyActions.connect(`${location.pathname}`)}>Spotify'a bağlan</Button>
+                <SpotifyConnectButton size="lg" returnPath={location.pathname}>Spotify'a bağlan</SpotifyConnectButton>
               )}
-              <Button variant="outline" size="lg" asChild><Link to="/">Yeni aktarım</Link></Button>
+              <Button variant="outline" size="lg" asChild><Link to="/app">Yeni aktarım</Link></Button>
             </div>
           </CardContent>
         </Card>
@@ -81,13 +81,13 @@ function CompletedState({ job }: { job: ImportJob }) {
     <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="mx-auto max-w-3xl py-10 sm:py-20">
       <Card className="overflow-hidden border-primary/15 bg-primary/[0.035] text-center">
         <CardContent className="p-8 sm:p-14">
-          <span className="mx-auto grid size-20 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_0_60px_-15px_var(--primary)]"><CheckCircle2 className="size-9" strokeWidth={2.6} /></span>
+          <span className="mx-auto grid size-20 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_0_60px_-15px_var(--primary)]"><CheckCircleIcon className="size-9" weight="fill" /></span>
           <Badge className="mt-7" variant="success">Aktarım tamamlandı</Badge>
-          <h2 className="text-balance mt-4 text-4xl font-extrabold tracking-[-0.055em] sm:text-6xl">Playlist'in hazır.</h2>
+          <h2 className="type-page-title mt-4">Playlist'in hazır.</h2>
           <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-muted-foreground">{job.statusMessage}. Spotify uygulamasından dinlemeye başlayabilirsin.</p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            {job.playlistUrl && <Button size="lg" asChild><a href={job.playlistUrl} target="_blank" rel="noreferrer">Spotify'da aç <ExternalLink /></a></Button>}
-            <Button size="lg" variant="outline" asChild><Link to="/">Yeni aktarım</Link></Button>
+            {job.playlistUrl && <Button size="lg" asChild><a href={job.playlistUrl} target="_blank" rel="noreferrer">Spotify'da aç <ArrowSquareOutIcon weight="bold" /></a></Button>}
+            <Button size="lg" variant="outline" asChild><Link to="/app">Yeni aktarım</Link></Button>
           </div>
         </CardContent>
       </Card>
@@ -100,10 +100,10 @@ function ErrorState({ title, message }: { title: string; message: string }) {
     <div className="mx-auto max-w-2xl py-10 sm:py-20">
       <Card className="border-red-400/12 bg-red-400/[0.035]">
         <CardContent className="p-8 text-center sm:p-12">
-          <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-red-400/10 text-red-300"><AlertTriangle className="size-6" /></span>
-          <h2 className="mt-5 text-2xl font-extrabold tracking-[-0.035em]">{title}</h2>
+          <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-red-400/10 text-red-300"><WarningIcon className="size-6" weight="duotone" /></span>
+          <h2 className="type-section-title mt-5">{title}</h2>
           <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted-foreground">{message}</p>
-          <Button className="mt-7" variant="outline" asChild><Link to="/"><ArrowLeft /> Yeni aktarım</Link></Button>
+          <Button className="mt-7" variant="outline" asChild><Link to="/app"><ArrowLeftIcon weight="bold" /> Yeni aktarım</Link></Button>
         </CardContent>
       </Card>
     </div>

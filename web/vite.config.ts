@@ -24,5 +24,14 @@ export default defineConfig({
     outDir: "../src/Highlightify.Web/wwwroot",
     emptyOutDir: true,
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("/node_modules/gsap/") || id.includes("/node_modules/@gsap/")) {
+            return "animation"
+          }
+        },
+      },
+    },
   },
 })

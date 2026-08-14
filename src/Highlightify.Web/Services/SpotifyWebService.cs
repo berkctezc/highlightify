@@ -20,6 +20,7 @@ public sealed record SpotifySettings(
 public sealed class SpotifyWebService(
 	IHttpClientFactory httpClientFactory,
 	SpotifySessionStore sessionStore,
+	ArtworkSimilarityService artworkSimilarity,
 	SpotifySettings settings)
 {
 	private const string Scope = "playlist-modify-private playlist-modify-public playlist-read-private user-read-private";
@@ -180,7 +181,8 @@ public sealed class SpotifyWebService(
 				break;
 		}
 
-		return matches.Values
+		var rankedMatches = await artworkSimilarity.ApplyAsync(candidate, matches.Values.ToList(), cancellationToken);
+		return rankedMatches
 			.OrderByDescending(match => match.MatchScore)
 			.ThenBy(match => match.Name, StringComparer.OrdinalIgnoreCase)
 			.Take(5)
@@ -352,7 +354,9 @@ public sealed class SpotifyWebService(
 		var album = item.TryGetProperty("album", out var albumItem) ? ReadString(albumItem, "name") ?? "" : "";
 		var imageUrl = item.TryGetProperty("album", out albumItem) ? ReadFirstImage(albumItem) : null;
 		var artist = string.Join(", ", artists);
-		var score = Score(candidate, name, artists, album);
+		var durationMs = ReadInt(item, "duration_ms", 0);
+		var popularity = ReadInt(item, "popularity", 0);
+		var score = Score(candidate, name, artists, album, durationMs, popularity);
 
 		return new SpotifyTrackResponse(
 			id,
@@ -362,12 +366,18 @@ public sealed class SpotifyWebService(
 			album,
 			imageUrl,
 			ReadNestedString(item, "external_urls", "spotify"),
-			ReadInt(item, "duration_ms", 0),
+			durationMs,
 			ReadBool(item, "explicit"),
 			score);
 	}
 
-	private static int Score(TrackCandidate candidate, string trackName, IReadOnlyList<string> artists, string album)
+	private static int Score(
+		TrackCandidate candidate,
+		string trackName,
+		IReadOnlyList<string> artists,
+		string album,
+		int durationMs,
+		int popularity)
 	{
 		var score = 0;
 		var candidateTitle = Normalize(candidate.Title);
@@ -392,6 +402,13 @@ public sealed class SpotifyWebService(
 			else if (ContainsEither(normalizedAlbum, candidateAlbum))
 				score += 10;
 		}
+
+		if (candidate.DurationMs is > 0 && durationMs > 0)
+		{
+			var difference = Math.Abs(candidate.DurationMs.Value - durationMs);
+			score += Math.Max(0, 50 - difference / 100);
+		}
+		score += Math.Clamp(popularity, 0, 100) / 10;
 
 		return score;
 	}

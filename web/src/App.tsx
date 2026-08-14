@@ -1,13 +1,14 @@
 import { useQueryClient } from "@tanstack/react-query"
-import { ArrowLeft } from "lucide-react"
-import { lazy, Suspense, useEffect } from "react"
-import { Link, Route, Routes, useSearchParams } from "react-router-dom"
+import { lazy, Suspense, useEffect, type ReactNode } from "react"
+import { Link, Route, Routes, useLocation, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 
 import { AppShell } from "@/components/app-shell"
+import { ArrowLeftIcon } from "@/components/icons"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 
+const LandingPage = lazy(() => import("@/pages/landing-page").then((module) => ({ default: module.LandingPage })))
 const HomePage = lazy(() => import("@/pages/home-page").then((module) => ({ default: module.HomePage })))
 const HistoryPage = lazy(() => import("@/pages/history-page").then((module) => ({ default: module.HistoryPage })))
 const ImportPage = lazy(() => import("@/pages/import-page").then((module) => ({ default: module.ImportPage })))
@@ -15,19 +16,33 @@ const SettingsPage = lazy(() => import("@/pages/settings-page").then((module) =>
 
 export default function App() {
   return (
-    <AppShell>
+    <>
       <OAuthNotice />
+      <ScrollToTop />
       <Suspense fallback={<PageLoading />}>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/imports/:id" element={<ImportPage />} />
-          <Route path="/history" element={<HistoryPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/app" element={<Workspace><HomePage /></Workspace>} />
+          <Route path="/imports/:id" element={<Workspace><ImportPage /></Workspace>} />
+          <Route path="/history" element={<Workspace><HistoryPage /></Workspace>} />
+          <Route path="/settings" element={<Workspace><SettingsPage /></Workspace>} />
+          <Route path="*" element={<Workspace><NotFound /></Workspace>} />
         </Routes>
       </Suspense>
-    </AppShell>
+    </>
   )
+}
+
+function Workspace({ children }: { children: ReactNode }) {
+  return <AppShell>{children}</AppShell>
+}
+
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+  }, [pathname])
+  return null
 }
 
 function OAuthNotice() {
@@ -53,7 +68,7 @@ function OAuthNotice() {
 }
 
 function PageLoading() {
-  return <div className="grid min-h-80 place-items-center"><span className="size-8 animate-spin rounded-full border-2 border-white/10 border-t-primary" /></div>
+  return <div className="grid min-h-screen place-items-center bg-black"><span className="size-8 animate-spin rounded-full border-2 border-white/10 border-t-primary" /></div>
 }
 
 function NotFound() {
@@ -62,9 +77,9 @@ function NotFound() {
       <Card>
         <CardContent className="p-10 text-center">
           <p className="text-6xl font-extrabold tracking-[-0.06em] text-primary">404</p>
-          <h2 className="mt-4 text-2xl font-extrabold">Bu parça listede yok.</h2>
+          <h2 className="type-section-title mt-4">Bu parça listede yok.</h2>
           <p className="mt-2 text-sm text-muted-foreground">Aradığın sayfa taşınmış veya hiç oluşturulmamış olabilir.</p>
-          <Button className="mt-7" asChild><Link to="/"><ArrowLeft /> Ana sayfaya dön</Link></Button>
+          <Button className="mt-7" asChild><Link to="/app"><ArrowLeftIcon weight="bold" /> Uygulamaya dön</Link></Button>
         </CardContent>
       </Card>
     </div>

@@ -17,6 +17,7 @@ The ASP.NET Core backend reuses the existing Instagram extraction logic, manages
 - Node.js 22+
 - pnpm 11+
 - `yt-dlp` for Highlights that require a local Instagram browser session
+- ImageMagick (`magick`) for album-cover similarity when several Spotify releases share the same metadata
 - A Spotify developer application
 
 Add this redirect URI to the Spotify developer application:

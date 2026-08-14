@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Highlightify.Web.Contracts;
 using Highlightify.Web.Services;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,10 @@ var spotifySettings = new SpotifySettings(
 		?? "http://127.0.0.1:5086/api/auth/spotify/callback",
 	builder.Configuration["HIGHLIGHTIFY_FRONTEND_URL"] ?? builder.Configuration["App:FrontendUrl"]
 		?? "http://127.0.0.1:5173");
+
+var appDataPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data");
+var dataProtectionKeysPath = Path.Combine(appDataPath, "keys");
+Directory.CreateDirectory(dataProtectionKeysPath);
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -25,7 +30,11 @@ builder.Services.Configure<FormOptions>(options =>
 	options.ValueLengthLimit = 6_000_000;
 });
 builder.Services.AddSingleton(spotifySettings);
+builder.Services.AddDataProtection()
+	.PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath))
+	.SetApplicationName("Highlightify.Web");
 builder.Services.AddSingleton<SpotifySessionStore>();
+builder.Services.AddSingleton<ArtworkSimilarityService>();
 builder.Services.AddSingleton<SpotifyWebService>();
 builder.Services.AddSingleton<ImportJobService>();
 builder.Services.AddHttpClient("spotify", client =>
@@ -34,6 +43,11 @@ builder.Services.AddHttpClient("spotify", client =>
 	client.Timeout = TimeSpan.FromSeconds(45);
 });
 builder.Services.AddHttpClient("instagram", client => client.Timeout = TimeSpan.FromMinutes(2));
+builder.Services.AddHttpClient("artwork", client =>
+{
+	client.Timeout = TimeSpan.FromSeconds(15);
+	client.DefaultRequestHeaders.UserAgent.ParseAdd("Highlightify/1.0 artwork-matcher");
+});
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
 	.WithOrigins(spotifySettings.FrontendUrl.TrimEnd('/'))
 	.AllowAnyHeader()
@@ -119,9 +133,9 @@ api.MapGet("/auth/spotify/callback", async (
 {
 	var frontendUrl = ResolveFrontendUrl(context, spotifySettings, app.Environment);
 	if (!string.IsNullOrWhiteSpace(error))
-		return Results.Redirect($"{frontendUrl}/?spotify=error&reason={Uri.EscapeDataString(error)}");
+		return Results.Redirect($"{frontendUrl}/app?spotify=error&reason={Uri.EscapeDataString(error)}");
 	if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(state))
-		return Results.Redirect($"{frontendUrl}/?spotify=error&reason=missing_callback");
+		return Results.Redirect($"{frontendUrl}/app?spotify=error&reason=missing_callback");
 
 	try
 	{
@@ -132,7 +146,7 @@ api.MapGet("/auth/spotify/callback", async (
 	catch (Exception exception) when (exception is InvalidOperationException or HttpRequestException)
 	{
 		app.Logger.LogWarning(exception, "Spotify callback failed");
-		return Results.Redirect($"{frontendUrl}/?spotify=error&reason=callback_failed");
+		return Results.Redirect($"{frontendUrl}/app?spotify=error&reason=callback_failed");
 	}
 });
 

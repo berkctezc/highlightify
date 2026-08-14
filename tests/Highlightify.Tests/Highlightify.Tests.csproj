@@ -20,6 +20,11 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Highlightify.Core\Highlightify.Core.csproj" />
         <ProjectReference Include="..\..\src\Highlightify.Integrations\Highlightify.Integrations.csproj" />
+        <ProjectReference Include="..\..\src\Highlightify.Web\Highlightify.Web.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
 </Project>

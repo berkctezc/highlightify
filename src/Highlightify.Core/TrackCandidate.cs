@@ -4,7 +4,9 @@ public sealed record TrackCandidate(
 	string Title,
 	string? Artist,
 	string? Album,
-	string Source)
+	string Source,
+	int? DurationMs = null,
+	string? ArtworkUrl = null)
 {
 	public string NormalizedKey => string.Join('|', Normalize(Title), Normalize(Artist), Normalize(Album));
 

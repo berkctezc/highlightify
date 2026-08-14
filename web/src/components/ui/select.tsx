@@ -1,5 +1,5 @@
 import * as SelectPrimitive from "@radix-ui/react-select"
-import { Check, ChevronDown } from "lucide-react"
+import { CaretDownIcon, CheckIcon } from "@/components/icons"
 import type * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -18,7 +18,7 @@ function SelectTrigger({ className, children, ...props }: React.ComponentProps<t
       {...props}
     >
       {children}
-      <SelectPrimitive.Icon asChild><ChevronDown className="size-4 text-muted-foreground" /></SelectPrimitive.Icon>
+      <SelectPrimitive.Icon asChild><CaretDownIcon className="size-4 text-muted-foreground" weight="bold" /></SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
 }
@@ -49,7 +49,7 @@ function SelectItem({ className, children, ...props }: React.ComponentProps<type
       className={cn("relative flex cursor-pointer select-none items-center rounded-lg py-2.5 pr-8 pl-3 text-sm outline-none data-[highlighted]:bg-white/8 data-[disabled]:opacity-50", className)}
       {...props}
     >
-      <span className="absolute right-2 flex size-4 items-center justify-center"><SelectPrimitive.ItemIndicator><Check className="size-4" /></SelectPrimitive.ItemIndicator></span>
+      <span className="absolute right-2 flex size-4 items-center justify-center"><SelectPrimitive.ItemIndicator><CheckIcon className="size-4" weight="bold" /></SelectPrimitive.ItemIndicator></span>
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
   )

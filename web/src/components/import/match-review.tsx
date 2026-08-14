@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { AnimatePresence, motion } from "motion/react"
-import { Check, CheckCircle2, ChevronDown, Circle, ListMusic, Music2, RefreshCw, ShieldCheck, Sparkles } from "lucide-react"
+import { ArrowClockwiseIcon, CaretDownIcon, CheckCircleIcon, CheckIcon, CircleIcon, MusicNotesIcon, PlaylistIcon, ShieldCheckIcon } from "@/components/icons"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -79,12 +79,12 @@ export function MatchReview({ job }: { job: ImportJob }) {
     <div>
       <div className="mb-7 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <Badge variant="success"><CheckCircle2 className="size-3" /> Eşleştirme tamamlandı</Badge>
-          <h2 className="mt-4 text-3xl font-extrabold tracking-[-0.05em] sm:text-5xl">Son kontrol sende.</h2>
-          <p className="mt-3 text-sm text-muted-foreground sm:text-base">{matchedCount} eşleşme bulundu. İstediğin parçayı değiştirebilir veya aktarım dışında bırakabilirsin.</p>
+          <Badge variant="success"><CheckCircleIcon className="size-3" weight="fill" /> Eşleştirme tamamlandı</Badge>
+          <h2 className="type-page-title mt-4">Son kontrol sende.</h2>
+          <p className="type-body mt-3">{matchedCount} eşleşme bulundu. İstediğin parçayı değiştirebilir veya aktarım dışında bırakabilirsin.</p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => toggleAll()}>
-          {allSelected ? <Circle /> : <CheckCircle2 />}{allSelected ? "Tümünü kaldır" : "Tümünü seç"}
+          {allSelected ? <CircleIcon /> : <CheckCircleIcon weight="fill" />}{allSelected ? "Tümünü kaldır" : "Tümünü seç"}
         </Button>
       </div>
 
@@ -115,7 +115,7 @@ export function MatchReview({ job }: { job: ImportJob }) {
                         onClick={() => toggleTrack(track)}
                         className={cn("grid size-7 place-items-center rounded-full border transition", choice?.enabled ? "border-primary bg-primary text-primary-foreground" : "border-white/13 text-transparent hover:border-white/30", track.alternatives.length === 0 && "cursor-not-allowed opacity-30")}
                       >
-                        <Check className="size-3.5" strokeWidth={3} />
+                        <CheckIcon className="size-3.5" weight="bold" />
                       </button>
 
                       <div className="min-w-0">
@@ -138,7 +138,7 @@ export function MatchReview({ job }: { job: ImportJob }) {
                         </div>
                       ) : (
                         <div className="col-span-2 row-start-2 flex items-center gap-2 pl-9 text-xs font-semibold text-amber-300 sm:col-span-1 sm:row-start-auto sm:pl-0">
-                          <Music2 className="size-4" /> Eşleşme bulunamadı
+                          <MusicNotesIcon className="size-4" weight="duotone" /> Eşleşme bulunamadı
                         </div>
                       )}
 
@@ -151,7 +151,7 @@ export function MatchReview({ job }: { job: ImportJob }) {
                         aria-label="Eşleşme alternatiflerini göster"
                         aria-expanded={expanded}
                       >
-                        <ChevronDown className={cn("size-4 transition", expanded && "rotate-180")} />
+                        <CaretDownIcon className={cn("size-4 transition", expanded && "rotate-180")} weight="bold" />
                       </button>
                     </div>
 
@@ -225,12 +225,12 @@ export function MatchReview({ job }: { job: ImportJob }) {
             )}
 
             <div className="rounded-xl bg-primary/[0.065] p-3.5">
-              <div className="flex items-center gap-2 text-xs font-bold text-primary"><ShieldCheck className="size-4" /> Sonuç senin kontrolünde</div>
+              <div className="flex items-center gap-2 text-xs font-bold text-primary"><ShieldCheckIcon className="size-4" weight="fill" /> Sonuç senin kontrolünde</div>
               <p className="mt-1.5 text-[11px] leading-5 text-muted-foreground">Yalnızca seçtiğin parçalar Spotify'a gönderilir.</p>
             </div>
 
             <Button className="w-full" size="lg" disabled={selectedUris.length === 0 || exportPlaylist.isPending || (playlistMode === "new" && !playlistName.trim())} onClick={() => exportPlaylist.mutate()}>
-              {exportPlaylist.isPending ? <RefreshCw className="animate-spin" /> : <Sparkles />}
+              {exportPlaylist.isPending ? <ArrowClockwiseIcon className="animate-spin" weight="bold" /> : <PlaylistIcon weight="fill" />}
               {exportPlaylist.isPending ? "Gönderiliyor…" : "Playlist'i hazırla"}
             </Button>
             <p className="text-center text-[10px] font-semibold text-muted-foreground">Spotify hesabında doğrudan oluşturulur</p>
@@ -250,9 +250,9 @@ function Artwork({ track, small = false }: { track: SpotifyTrack; small?: boolea
       </a>
     )
   }
-  return <span className={cn(size, "grid shrink-0 place-items-center bg-white/7")}><ListMusic className="size-4 text-muted-foreground" /></span>
+  return <span className={cn(size, "grid shrink-0 place-items-center bg-white/7")}><PlaylistIcon className="size-4 text-muted-foreground" weight="duotone" /></span>
 }
 
 function confidence(score: number) {
-  return Math.max(25, Math.min(99, Math.round((score / 205) * 100)))
+  return Math.max(25, Math.min(99, Math.round((score / 270) * 100)))
 }

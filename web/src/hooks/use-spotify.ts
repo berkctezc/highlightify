@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
-import { api, spotifyLoginUrl } from "@/api/client"
+import { api } from "@/api/client"
 
 export function useSpotifyConnection() {
   return useQuery({
@@ -21,9 +21,6 @@ export function useSpotifyActions() {
   })
 
   return {
-    connect(returnPath = "/") {
-      window.location.assign(spotifyLoginUrl(returnPath))
-    },
     disconnect,
   }
 }

@@ -432,7 +432,7 @@ public sealed partial class ImportJobService(
 			return null;
 		var trimmed = browserSource.Trim();
 		if (trimmed.Length > 500 || trimmed.Contains('\n') || !BrowserSourceRegex().IsMatch(trimmed))
-			throw new ArgumentException("Tarayıcı kaynağı firefox, chrome, chromium, edge veya safari olmalı.");
+			throw new ArgumentException("Tarayıcı kaynağı brave, firefox, chrome, chromium, edge veya safari olmalı.");
 		return trimmed;
 	}
 
@@ -447,7 +447,7 @@ public sealed partial class ImportJobService(
 	[GeneratedRegex("^[0-9]{5,40}$", RegexOptions.CultureInvariant)]
 	private static partial Regex HighlightIdRegex();
 
-	[GeneratedRegex("^(firefox|chrome|chromium|edge|safari)(:.+)?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+	[GeneratedRegex("^(brave|firefox|chrome|chromium|edge|safari)(:.+)?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
 	private static partial Regex BrowserSourceRegex();
 
 	[GeneratedRegex("^[A-Za-z0-9]+$", RegexOptions.CultureInvariant)]

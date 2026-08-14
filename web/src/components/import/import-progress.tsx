@@ -1,5 +1,5 @@
 import { motion } from "motion/react"
-import { AudioWaveform, Check, Disc3, GalleryVerticalEnd, Search, Sparkles } from "lucide-react"
+import { CheckIcon, ImagesIcon, MagnifyingGlassIcon, VinylRecordIcon, WaveformIcon } from "@/components/icons"
 
 import type { ImportJob } from "@/api/types"
 import { Badge } from "@/components/ui/badge"
@@ -8,18 +8,18 @@ import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 
 const steps = [
-  { key: "source", label: "Kaynaklar", icon: GalleryVerticalEnd, threshold: 8 },
-  { key: "read", label: "Müzikler", icon: AudioWaveform, threshold: 35 },
-  { key: "match", label: "Eşleşmeler", icon: Search, threshold: 88 },
-  { key: "ready", label: "Hazır", icon: Disc3, threshold: 100 },
+  { key: "source", label: "Kaynaklar", icon: ImagesIcon, threshold: 8 },
+  { key: "read", label: "Müzikler", icon: WaveformIcon, threshold: 35 },
+  { key: "match", label: "Eşleşmeler", icon: MagnifyingGlassIcon, threshold: 88 },
+  { key: "ready", label: "Hazır", icon: VinylRecordIcon, threshold: 100 },
 ]
 
 export function ImportProgress({ job }: { job: ImportJob }) {
   return (
     <div className="mx-auto max-w-4xl py-6 sm:py-12">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-        <Badge><Sparkles className="size-3" /> Aktarım çalışıyor</Badge>
-        <h2 className="text-balance mt-5 text-3xl font-extrabold tracking-[-0.05em] sm:text-5xl">Highlight'ların dinleniyor.</h2>
+        <Badge><WaveformIcon className="size-3" weight="bold" /> Aktarım çalışıyor</Badge>
+        <h2 className="type-page-title mt-5">Highlight'ların dinleniyor.</h2>
         <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">Sekmeyi açık tutabilirsin; bulunan müzikleri adım adım Spotify kataloğuyla eşleştiriyoruz.</p>
       </motion.div>
 
@@ -46,7 +46,7 @@ export function ImportProgress({ job }: { job: ImportJob }) {
                     "relative z-10 mx-auto grid size-8 place-items-center rounded-full border transition",
                     complete ? "border-primary bg-primary text-primary-foreground" : active ? "border-primary/55 bg-primary/10 text-primary" : "border-white/8 bg-card text-muted-foreground",
                   )}>
-                    {complete ? <Check className="size-4" strokeWidth={3} /> : <Icon className={cn("size-4", active && "animate-pulse")} />}
+                    {complete ? <CheckIcon className="size-4" weight="bold" /> : <Icon className={cn("size-4", active && "animate-pulse")} weight={active ? "duotone" : "regular"} />}
                   </span>
                   <p className={cn("mt-2.5 text-[10px] font-bold sm:text-xs", complete || active ? "text-foreground" : "text-muted-foreground")}>{step.label}</p>
                 </div>
@@ -65,7 +65,7 @@ export function ImportProgress({ job }: { job: ImportJob }) {
             transition={{ delay: index * 0.08 }}
             className="flex min-w-0 items-center gap-3 rounded-2xl border border-white/6 bg-white/3 p-3"
           >
-            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/6"><GalleryVerticalEnd className="size-4 text-accent" /></span>
+            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/6"><ImagesIcon className="size-4 text-accent" weight="duotone" /></span>
             <span className="truncate text-xs font-semibold text-muted-foreground">{source}</span>
           </motion.div>
         ))}
