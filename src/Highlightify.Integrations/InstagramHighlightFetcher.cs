@@ -10,9 +10,9 @@ public sealed class InstagramHighlightFetcher
 
 	private readonly HttpClient _httpClient;
 
-	public InstagramHighlightFetcher()
+	public InstagramHighlightFetcher(HttpClient? httpClient = null)
 	{
-		_httpClient = new HttpClient();
+		_httpClient = httpClient ?? new HttpClient();
 		_httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36");
 		_httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
 		_httpClient.DefaultRequestHeaders.AcceptLanguage.ParseAdd("en-US,en;q=0.9");

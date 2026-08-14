@@ -10,12 +10,13 @@ public sealed class SpotifyClient : IDisposable
 	private readonly HttpClient _httpClient;
 	private SpotifyTokenCache? _token;
 
-	public SpotifyClient(string clientId, string redirectUri, bool openBrowser)
+	public SpotifyClient(string clientId, string redirectUri, bool openBrowser, HttpClient? httpClient = null)
 	{
 		_clientId = clientId;
 		_redirectUri = redirectUri;
 		_openBrowser = openBrowser;
-		_httpClient = new HttpClient {BaseAddress = new Uri("https://api.spotify.com/v1/")};
+		_httpClient = httpClient ?? new HttpClient();
+		_httpClient.BaseAddress ??= new Uri("https://api.spotify.com/v1/");
 	}
 
 	public async Task AuthenticateAsync(CancellationToken cancellationToken = default)
@@ -290,7 +291,7 @@ public sealed class SpotifyClient : IDisposable
 		return JsonSerializer.Deserialize<SpotifyTokenCache>(json, SpotifyJson.Options);
 	}
 
-	private void SaveCachedToken(SpotifyTokenCache token)
+	private static void SaveCachedToken(SpotifyTokenCache token)
 	{
 		var path = GetCachePath();
 		Directory.CreateDirectory(Path.GetDirectoryName(path)!);

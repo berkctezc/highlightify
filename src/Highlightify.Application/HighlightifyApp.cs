@@ -2,8 +2,13 @@ namespace Highlightify.Application;
 
 public static class HighlightifyApp
 {
-	public static async Task<int> RunAsync(string[] args)
+	public static async Task<int> RunAsync(
+		string[] args,
+		Func<InstagramHighlightFetcher>? instagramFactory = null,
+		Func<SpotifyClient>? spotifyFactory = null)
 	{
+		instagramFactory ??= () => new InstagramHighlightFetcher();
+
 		if (args.Any(a => a is "--help" or "-h"))
 		{
 			PrintUsage();
@@ -19,7 +24,7 @@ public static class HighlightifyApp
 			return 1;
 		}
 
-		var instagram = new InstagramHighlightFetcher();
+		var instagram = instagramFactory();
 		var allCandidates = new List<TrackCandidate>();
 		var browserSpec = options.InstagramCookiesFromBrowser
 		                  ?? BrowserCookieLoader.InferFirefoxBrowserSpec(options.InstagramCookiePath);
@@ -76,10 +81,12 @@ public static class HighlightifyApp
 			return 0;
 		}
 
-		using var spotify = new SpotifyClient(
+		spotifyFactory ??= () => new SpotifyClient(
 			options.SpotifyClientId!,
 			options.RedirectUri,
 			options.OpenBrowser);
+
+		using var spotify = spotifyFactory();
 
 		await spotify.AuthenticateAsync();
 
