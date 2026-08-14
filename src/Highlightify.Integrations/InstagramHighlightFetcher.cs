@@ -47,14 +47,30 @@ public sealed class InstagramHighlightFetcher
 		string cookiesFromBrowser,
 		CancellationToken cancellationToken = default)
 	{
-		var html = await FetchHtmlViaYtDlpAsync(highlightUrl, cookiesFromBrowser, cancellationToken);
-		return ExtractCandidates(html, highlightUrl);
+		var payloads = await FetchPayloadsViaYtDlpAsync(highlightUrl, cookiesFromBrowser, cancellationToken);
+		return ExtractCandidates(payloads, highlightUrl);
+	}
+
+	public IReadOnlyList<TrackCandidate> ExtractCandidates(IEnumerable<string> payloads, string sourceLabel)
+	{
+		return payloads
+			.SelectMany(payload => ExtractCandidates(payload, sourceLabel))
+			.GroupBy(candidate => candidate.NormalizedKey, StringComparer.OrdinalIgnoreCase)
+			.Select(group => group
+				.OrderByDescending(candidate => candidate.DurationMs.HasValue)
+				.ThenByDescending(candidate => !string.IsNullOrWhiteSpace(candidate.ArtworkUrl))
+				.ThenByDescending(candidate => !string.IsNullOrWhiteSpace(candidate.Album))
+				.First())
+			.ToList();
 	}
 
 	public IReadOnlyList<TrackCandidate> ExtractCandidates(string html, string sourceLabel)
 	{
 		var results = new List<TrackCandidate>();
 		var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		var trimmed = html.AsSpan().TrimStart();
+		if (!trimmed.IsEmpty && trimmed[0] is '{' or '[')
+			TryScanJson(html, sourceLabel, results, seen);
 
 		foreach (Match match in ScriptBlockRegex.Matches(html))
 		{
@@ -63,13 +79,18 @@ public sealed class InstagramHighlightFetcher
 				TryScanJson(fragment, sourceLabel, results, seen);
 		}
 
-		foreach (Match match in PairFallbackRegex.Matches(html))
-			AddCandidate(results, seen, match.Groups["title"].Value, match.Groups["artist"].Value, null, sourceLabel);
+		// The fallback regex can accidentally pair fields from adjacent JSON objects.
+		// Only use it when the structured script scan found no candidates at all.
+		if (results.Count == 0)
+		{
+			foreach (Match match in PairFallbackRegex.Matches(html))
+				AddCandidate(results, seen, match.Groups["title"].Value, match.Groups["artist"].Value, null, sourceLabel, null, null);
+		}
 
 		return results;
 	}
 
-	private static async Task<string> FetchHtmlViaYtDlpAsync(
+	private static async Task<IReadOnlyList<string>> FetchPayloadsViaYtDlpAsync(
 		string highlightUrl,
 		string cookiesFromBrowser,
 		CancellationToken cancellationToken)
@@ -104,19 +125,26 @@ public sealed class InstagramHighlightFetcher
 			var stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
 			var stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
 			await process.WaitForExitAsync(cancellationToken);
-			var stdout = await stdoutTask;
+			await stdoutTask;
 			var stderr = await stderrTask;
 
 			if (process.ExitCode != 0)
 			{
+				if (RequiresFreshInstagramSession(stderr))
+				{
+					throw new InvalidOperationException(
+						"Instagram oturumu doğrulanamadı. Story'yi görüntülediğiniz tarayıcıyı seçin, "
+						+ "o tarayıcıda Instagram'a giriş yaptığınızdan emin olun ve yeniden deneyin.");
+				}
+
 				throw new InvalidOperationException(
-					$"yt-dlp failed while loading the Instagram page: {stderr.Trim()}"
-					+ (string.IsNullOrWhiteSpace(stdout) ? string.Empty : $" {stdout.Trim()}"));
+					"Instagram içeriği tarayıcı oturumuyla alınamadı. Story silinmiş veya süresi dolmuş olabilir.");
 			}
 
-			var html = FindBestWrittenPage(tempDir);
-			return html
-			       ?? throw new InvalidOperationException("yt-dlp completed but did not write a readable Instagram page.");
+			var payloads = ReadWrittenPayloads(tempDir);
+			return payloads.Count > 0
+				? payloads
+				: throw new InvalidOperationException("yt-dlp tamamlandı ancak okunabilir bir Instagram yanıtı oluşturmadı.");
 		}
 		finally
 		{
@@ -124,7 +152,14 @@ public sealed class InstagramHighlightFetcher
 		}
 	}
 
-	private static string? FindBestWrittenPage(string root)
+	private static bool RequiresFreshInstagramSession(string error) =>
+		error.Contains("authentication", StringComparison.OrdinalIgnoreCase) ||
+		error.Contains("cookies-from-browser", StringComparison.OrdinalIgnoreCase) ||
+		error.Contains("cookies for", StringComparison.OrdinalIgnoreCase) ||
+		error.Contains("cookie database", StringComparison.OrdinalIgnoreCase) ||
+		error.Contains("failed to decrypt", StringComparison.OrdinalIgnoreCase);
+
+	private static IReadOnlyList<string> ReadWrittenPayloads(string root)
 	{
 		var candidates = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
 			.Select(path => new FileInfo(path))
@@ -133,6 +168,7 @@ public sealed class InstagramHighlightFetcher
 			.ThenByDescending(file => file.LastWriteTimeUtc)
 			.ToList();
 
+		var payloads = new List<string>();
 		foreach (var file in candidates)
 		{
 			string text;
@@ -145,18 +181,22 @@ public sealed class InstagramHighlightFetcher
 				continue;
 			}
 
-			if (LooksLikeInstagramHtml(text))
-				return text;
+			if (LooksLikeInstagramPayload(text))
+				payloads.Add(text);
 		}
 
-		return null;
+		return payloads;
 	}
 
-	private static bool LooksLikeInstagramHtml(string text) =>
-		text.Contains("<html", StringComparison.OrdinalIgnoreCase) ||
-		text.Contains("window._sharedData", StringComparison.OrdinalIgnoreCase) ||
-		text.Contains("window.__additionalDataLoaded", StringComparison.OrdinalIgnoreCase) ||
-		text.Contains("graphql", StringComparison.OrdinalIgnoreCase);
+	private static bool LooksLikeInstagramPayload(string text)
+	{
+		var trimmed = text.AsSpan().TrimStart();
+		return (!trimmed.IsEmpty && trimmed[0] is '{' or '[') ||
+		       text.Contains("<html", StringComparison.OrdinalIgnoreCase) ||
+		       text.Contains("window._sharedData", StringComparison.OrdinalIgnoreCase) ||
+		       text.Contains("window.__additionalDataLoaded", StringComparison.OrdinalIgnoreCase) ||
+		       text.Contains("graphql", StringComparison.OrdinalIgnoreCase);
+	}
 
 	private static void TryDeleteDirectory(string path)
 	{
@@ -276,15 +316,17 @@ public sealed class InstagramHighlightFetcher
 			case JsonValueKind.Object:
 				var properties = element.EnumerateObject().ToList();
 				string? title = FindFirst(properties, "title", "name", "song_name", "track_name");
-				string? artist = FindFirst(properties, "artist_name", "display_artist_name", "artist");
+				string? artist = FindFirst(properties, "artist_name", "display_artist", "display_artist_name", "artist");
 				string? album = FindFirst(properties, "album_name", "album", "collection_name", "release_name");
+				var durationMs = FindFirstInt(properties, "duration_in_ms", "duration_ms");
+				var artworkUrl = FindFirst(properties, "cover_artwork_uri", "cover_artwork_thumbnail_uri");
 				var isMusicLike = properties.Any(p => p.Name.Contains("music", StringComparison.OrdinalIgnoreCase) ||
 				                                      p.Name.Contains("audio", StringComparison.OrdinalIgnoreCase) ||
 				                                      p.Name.Contains("song", StringComparison.OrdinalIgnoreCase) ||
 				                                      p.Name.Contains("track", StringComparison.OrdinalIgnoreCase));
 
 				if (!string.IsNullOrWhiteSpace(title) && (isMusicLike || !string.IsNullOrWhiteSpace(artist) || !string.IsNullOrWhiteSpace(album)))
-					AddCandidate(results, seen, title, artist, album, sourceLabel);
+					AddCandidate(results, seen, title, artist, album, sourceLabel, durationMs, artworkUrl);
 
 				foreach (var property in properties)
 					Walk(property.Value, sourceLabel, results, seen);
@@ -301,13 +343,35 @@ public sealed class InstagramHighlightFetcher
 		return (from name in names select properties.FirstOrDefault(p => p.NameEquals(name)) into match where match.Value.ValueKind == JsonValueKind.String select match.Value.GetString()).FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
 	}
 
-	private static void AddCandidate(List<TrackCandidate> results, HashSet<string> seen, string title, string? artist, string? album, string source)
+	private static int? FindFirstInt(IEnumerable<JsonProperty> properties, params string[] names)
+	{
+		foreach (var name in names)
+		{
+			var match = properties.FirstOrDefault(property => property.NameEquals(name));
+			if (match.Value.ValueKind == JsonValueKind.Number && match.Value.TryGetInt32(out var value) && value > 0)
+				return value;
+		}
+
+		return null;
+	}
+
+	private static void AddCandidate(
+		List<TrackCandidate> results,
+		HashSet<string> seen,
+		string title,
+		string? artist,
+		string? album,
+		string source,
+		int? durationMs,
+		string? artworkUrl)
 	{
 		var candidate = new TrackCandidate(
 			title.Trim(),
 			string.IsNullOrWhiteSpace(artist) ? null : artist.Trim(),
 			string.IsNullOrWhiteSpace(album) ? null : album.Trim(),
-			source);
+			source,
+			durationMs,
+			string.IsNullOrWhiteSpace(artworkUrl) ? null : artworkUrl.Trim());
 		if (seen.Add(candidate.NormalizedKey))
 			results.Add(candidate);
 	}
