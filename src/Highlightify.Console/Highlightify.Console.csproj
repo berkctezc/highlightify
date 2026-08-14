@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Highlightify.Application\Highlightify.Application.csproj" />
+        <ProjectReference Include="..\Highlightify.Application\Highlightify.Application.csproj"/>
     </ItemGroup>
 
 </Project>

@@ -61,7 +61,7 @@ public sealed class SpotifyClient : IDisposable
 		if (string.IsNullOrWhiteSpace(code) || returnedState != state)
 			throw new InvalidOperationException("Spotify authorization failed or returned an invalid state.");
 
-		_token = await ExchangeCodeAsync(code!, pkce.CodeVerifier, cancellationToken);
+		_token = await ExchangeCodeAsync(code, pkce.CodeVerifier, cancellationToken);
 		SaveCachedToken(_token);
 		_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
 	}
