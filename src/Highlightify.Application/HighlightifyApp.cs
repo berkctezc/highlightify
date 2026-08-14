@@ -1,6 +1,3 @@
-using Highlightify.Core;
-using Highlightify.Integrations;
-
 namespace Highlightify.Application;
 
 public static class HighlightifyApp

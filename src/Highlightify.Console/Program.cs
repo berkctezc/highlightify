@@ -1,0 +1,1 @@
+﻿return await HighlightifyApp.RunAsync(args);

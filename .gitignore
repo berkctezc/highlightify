@@ -237,7 +237,6 @@ FodyWeavers.xsd
 *.log.*
 *.sig
 pkg/
-src/
 Thumbs.db
 Thumbs.db:encryptable
 ehthumbs.db

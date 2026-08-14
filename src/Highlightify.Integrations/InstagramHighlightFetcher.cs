@@ -1,10 +1,3 @@
-using System.Diagnostics;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using Highlightify.Core;
-
 namespace Highlightify.Integrations;
 
 public sealed class InstagramHighlightFetcher

@@ -1,5 +1,3 @@
-using Highlightify.Integrations;
-
 namespace Highlightify.Application;
 
 public sealed record AppOptions(

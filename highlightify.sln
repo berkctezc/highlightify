@@ -1,12 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "highlightify", "highlightify\highlightify.csproj", "{BBF4C39D-15B2-45AC-8676-F1CEB67D5BE0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Highlightify.Core", "src\Highlightify.Core\Highlightify.Core.csproj", "{67F55AC6-0A6F-4699-9366-A4EE849038ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Highlightify.Core", "highlightify\Highlightify.Core\Highlightify.Core.csproj", "{67F55AC6-0A6F-4699-9366-A4EE849038ED}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Highlightify.Application", "src\Highlightify.Application\Highlightify.Application.csproj", "{68A27CB8-0F0E-41D8-BE4C-1C5278794960}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Highlightify.Application", "highlightify\Highlightify.Application\Highlightify.Application.csproj", "{68A27CB8-0F0E-41D8-BE4C-1C5278794960}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Highlightify.Integrations", "src\Highlightify.Integrations\Highlightify.Integrations.csproj", "{E005842E-A2FD-4F09-B7DE-98DE11D19B3D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Highlightify.Integrations", "highlightify\Highlightify.Integrations\Highlightify.Integrations.csproj", "{E005842E-A2FD-4F09-B7DE-98DE11D19B3D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Highlightify.Console", "src\Highlightify.Console\Highlightify.Console.csproj", "{1C11914F-E3F8-4D70-8B09-61D17FFDA62E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,18 +18,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{BBF4C39D-15B2-45AC-8676-F1CEB67D5BE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BBF4C39D-15B2-45AC-8676-F1CEB67D5BE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BBF4C39D-15B2-45AC-8676-F1CEB67D5BE0}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{BBF4C39D-15B2-45AC-8676-F1CEB67D5BE0}.Debug|x64.Build.0 = Debug|Any CPU
-		{BBF4C39D-15B2-45AC-8676-F1CEB67D5BE0}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{BBF4C39D-15B2-45AC-8676-F1CEB67D5BE0}.Debug|x86.Build.0 = Debug|Any CPU
-		{BBF4C39D-15B2-45AC-8676-F1CEB67D5BE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BBF4C39D-15B2-45AC-8676-F1CEB67D5BE0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BBF4C39D-15B2-45AC-8676-F1CEB67D5BE0}.Release|x64.ActiveCfg = Release|Any CPU
-		{BBF4C39D-15B2-45AC-8676-F1CEB67D5BE0}.Release|x64.Build.0 = Release|Any CPU
-		{BBF4C39D-15B2-45AC-8676-F1CEB67D5BE0}.Release|x86.ActiveCfg = Release|Any CPU
-		{BBF4C39D-15B2-45AC-8676-F1CEB67D5BE0}.Release|x86.Build.0 = Release|Any CPU
 		{67F55AC6-0A6F-4699-9366-A4EE849038ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{67F55AC6-0A6F-4699-9366-A4EE849038ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{67F55AC6-0A6F-4699-9366-A4EE849038ED}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -66,6 +54,18 @@ Global
 		{E005842E-A2FD-4F09-B7DE-98DE11D19B3D}.Release|x64.Build.0 = Release|Any CPU
 		{E005842E-A2FD-4F09-B7DE-98DE11D19B3D}.Release|x86.ActiveCfg = Release|Any CPU
 		{E005842E-A2FD-4F09-B7DE-98DE11D19B3D}.Release|x86.Build.0 = Release|Any CPU
+		{1C11914F-E3F8-4D70-8B09-61D17FFDA62E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C11914F-E3F8-4D70-8B09-61D17FFDA62E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C11914F-E3F8-4D70-8B09-61D17FFDA62E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1C11914F-E3F8-4D70-8B09-61D17FFDA62E}.Debug|x64.Build.0 = Debug|Any CPU
+		{1C11914F-E3F8-4D70-8B09-61D17FFDA62E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1C11914F-E3F8-4D70-8B09-61D17FFDA62E}.Debug|x86.Build.0 = Debug|Any CPU
+		{1C11914F-E3F8-4D70-8B09-61D17FFDA62E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C11914F-E3F8-4D70-8B09-61D17FFDA62E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C11914F-E3F8-4D70-8B09-61D17FFDA62E}.Release|x64.ActiveCfg = Release|Any CPU
+		{1C11914F-E3F8-4D70-8B09-61D17FFDA62E}.Release|x64.Build.0 = Release|Any CPU
+		{1C11914F-E3F8-4D70-8B09-61D17FFDA62E}.Release|x86.ActiveCfg = Release|Any CPU
+		{1C11914F-E3F8-4D70-8B09-61D17FFDA62E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
