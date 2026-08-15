@@ -290,7 +290,20 @@ static string? FindExecutable(string name)
 	var path = Environment.GetEnvironmentVariable("PATH");
 	if (string.IsNullOrWhiteSpace(path))
 		return null;
-	return path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-		.Select(directory => Path.Combine(directory, name))
-		.FirstOrDefault(File.Exists);
+
+	var extensions = OperatingSystem.IsWindows()
+		? (Environment.GetEnvironmentVariable("PATHEXT")?.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [".exe", ".cmd", ".bat"])
+		: [string.Empty];
+
+	foreach (var directory in path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+	{
+		foreach (var extension in extensions)
+		{
+			var candidate = Path.Combine(directory, name.EndsWith(extension, StringComparison.OrdinalIgnoreCase) ? name : $"{name}{extension}");
+			if (File.Exists(candidate))
+				return candidate;
+		}
+	}
+
+	return null;
 }

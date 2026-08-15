@@ -104,7 +104,7 @@ public sealed class SpotifySessionStore
 					_logger.LogWarning(exception, "A saved Spotify session could not be restored and was ignored.");
 				}
 		}
-		catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
+		catch (Exception exception)
 		{
 			_logger.LogWarning(exception, "Spotify sessions could not be loaded from disk.");
 		}
@@ -133,7 +133,7 @@ public sealed class SpotifySessionStore
 					_logger.LogWarning(exception, "A pending Spotify authorization could not be restored and was ignored.");
 				}
 		}
-		catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
+		catch (Exception exception)
 		{
 			_logger.LogWarning(exception, "Pending Spotify authorizations could not be loaded from disk.");
 		}

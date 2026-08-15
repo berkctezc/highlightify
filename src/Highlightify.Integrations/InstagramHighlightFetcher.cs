@@ -214,9 +214,24 @@ public sealed class InstagramHighlightFetcher
 	private static string? FindExecutable(string name)
 	{
 		var pathEnv = Environment.GetEnvironmentVariable("PATH");
-		return string.IsNullOrWhiteSpace(pathEnv)
-			? null
-			: pathEnv.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(dir => Path.Combine(dir, name)).FirstOrDefault(File.Exists);
+		if (string.IsNullOrWhiteSpace(pathEnv))
+			return null;
+
+		var extensions = OperatingSystem.IsWindows()
+			? (Environment.GetEnvironmentVariable("PATHEXT")?.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [".exe", ".cmd", ".bat"])
+			: [string.Empty];
+
+		foreach (var directory in pathEnv.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+		{
+			foreach (var extension in extensions)
+			{
+				var candidate = Path.Combine(directory, name.EndsWith(extension, StringComparison.OrdinalIgnoreCase) ? name : $"{name}{extension}");
+				if (File.Exists(candidate))
+					return candidate;
+			}
+		}
+
+		return null;
 	}
 
 	private static IEnumerable<string> ExtractJsonFragments(string script)
