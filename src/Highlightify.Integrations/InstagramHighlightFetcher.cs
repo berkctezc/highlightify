@@ -53,15 +53,17 @@ public sealed class InstagramHighlightFetcher
 
 	public IReadOnlyList<TrackCandidate> ExtractCandidates(IEnumerable<string> payloads, string sourceLabel)
 	{
-		return payloads
-			.SelectMany(payload => ExtractCandidates(payload, sourceLabel))
-			.GroupBy(candidate => candidate.NormalizedKey, StringComparer.OrdinalIgnoreCase)
-			.Select(group => group
-				.OrderByDescending(candidate => candidate.DurationMs.HasValue)
-				.ThenByDescending(candidate => !string.IsNullOrWhiteSpace(candidate.ArtworkUrl))
-				.ThenByDescending(candidate => !string.IsNullOrWhiteSpace(candidate.Album))
-				.First())
-			.ToList();
+		return
+		[
+			.. payloads
+				.SelectMany(payload => ExtractCandidates(payload, sourceLabel))
+				.GroupBy(candidate => candidate.NormalizedKey, StringComparer.OrdinalIgnoreCase)
+				.Select(group => group
+					.OrderByDescending(candidate => candidate.DurationMs.HasValue)
+					.ThenByDescending(candidate => !string.IsNullOrWhiteSpace(candidate.ArtworkUrl))
+					.ThenByDescending(candidate => !string.IsNullOrWhiteSpace(candidate.Album))
+					.First())
+		];
 	}
 
 	public IReadOnlyList<TrackCandidate> ExtractCandidates(string html, string sourceLabel)
@@ -81,9 +83,9 @@ public sealed class InstagramHighlightFetcher
 
 		// The fallback regex can accidentally pair fields from adjacent JSON objects.
 		// Only use it when the structured script scan found no candidates at all.
-		if (results.Count == 0)
-			foreach (Match match in PairFallbackRegex.Matches(html))
-				AddCandidate(results, seen, match.Groups["title"].Value, match.Groups["artist"].Value, null, sourceLabel, null, null);
+		if (results.Count != 0) return results;
+		foreach (Match match in PairFallbackRegex.Matches(html))
+			AddCandidate(results, seen, match.Groups["title"].Value, match.Groups["artist"].Value, null, sourceLabel, null, null);
 
 		return results;
 	}
@@ -212,10 +214,9 @@ public sealed class InstagramHighlightFetcher
 	private static string? FindExecutable(string name)
 	{
 		var pathEnv = Environment.GetEnvironmentVariable("PATH");
-		if (string.IsNullOrWhiteSpace(pathEnv))
-			return null;
-
-		return pathEnv.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(dir => Path.Combine(dir, name)).FirstOrDefault(File.Exists);
+		return string.IsNullOrWhiteSpace(pathEnv)
+			? null
+			: pathEnv.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(dir => Path.Combine(dir, name)).FirstOrDefault(File.Exists);
 	}
 
 	private static IEnumerable<string> ExtractJsonFragments(string script)

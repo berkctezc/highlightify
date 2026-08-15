@@ -241,12 +241,13 @@ app.MapFallback(async context =>
 });
 
 app.Run();
+return;
 
 static string ResolveFrontendUrl(HttpContext context, SpotifySettings settings, IWebHostEnvironment environment)
 {
-	if (environment.IsDevelopment())
-		return settings.FrontendUrl.TrimEnd('/');
-	return $"{context.Request.Scheme}://{context.Request.Host}";
+	return environment.IsDevelopment()
+		? settings.FrontendUrl.TrimEnd('/')
+		: $"{context.Request.Scheme}://{context.Request.Host}";
 }
 
 static string? FindExecutable(string name)
@@ -258,5 +259,3 @@ static string? FindExecutable(string name)
 		.Select(directory => Path.Combine(directory, name))
 		.FirstOrDefault(File.Exists);
 }
-
-public partial class Program;

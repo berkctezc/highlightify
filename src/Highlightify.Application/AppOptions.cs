@@ -34,8 +34,6 @@ public sealed record AppOptions(
 			switch (arg)
 			{
 				case "--highlight":
-					highlightSources.Add(NextValue());
-					break;
 				case "--html":
 					highlightSources.Add(NextValue());
 					break;

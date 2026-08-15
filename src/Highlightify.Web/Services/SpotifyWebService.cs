@@ -16,7 +16,7 @@ public sealed class SpotifyWebService(
 {
 	private const string Scope = "playlist-modify-private playlist-modify-public playlist-read-private user-read-private";
 
-	public bool IsConfigured => settings.IsConfigured;
+	private bool IsConfigured => settings.IsConfigured;
 
 	public string CreateAuthorizationUrl(string sessionId, string returnPath)
 	{
@@ -161,12 +161,8 @@ public sealed class SpotifyWebService(
 			    items.ValueKind != JsonValueKind.Array)
 				continue;
 
-			foreach (var item in items.EnumerateArray())
+			foreach (var parsed in items.EnumerateArray().Select(item => ParseTrack(item, candidate)).OfType<SpotifyTrackResponse>())
 			{
-				var parsed = ParseTrack(item, candidate);
-				if (parsed is null)
-					continue;
-
 				if (!matches.TryGetValue(parsed.Id, out var current) || parsed.MatchScore > current.MatchScore)
 					matches[parsed.Id] = parsed;
 			}
@@ -175,12 +171,14 @@ public sealed class SpotifyWebService(
 				break;
 		}
 
-		var rankedMatches = await artworkSimilarity.ApplyAsync(candidate, matches.Values.ToList(), cancellationToken);
-		return rankedMatches
-			.OrderByDescending(match => match.MatchScore)
-			.ThenBy(match => match.Name, StringComparer.OrdinalIgnoreCase)
-			.Take(5)
-			.ToList();
+		var rankedMatches = await artworkSimilarity.ApplyAsync(candidate, [.. matches.Values], cancellationToken);
+		return
+		[
+			.. rankedMatches
+				.OrderByDescending(match => match.MatchScore)
+				.ThenBy(match => match.Name, StringComparer.OrdinalIgnoreCase)
+				.Take(5)
+		];
 	}
 
 	public async Task<(string Id, string? Url)> CreatePlaylistAsync(

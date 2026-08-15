@@ -18,7 +18,7 @@ public sealed class SpotifySessionStore
 	private readonly ConcurrentDictionary<string, PendingSpotifyAuthorization> _pending = new();
 	private readonly IDataProtector _pendingProtector;
 	private readonly string _pendingStoragePath;
-	private readonly object _persistenceLock = new();
+	private readonly Lock _persistenceLock = new();
 	private readonly ConcurrentDictionary<string, SemaphoreSlim> _refreshLocks = new();
 	private readonly IDataProtector _tokenProtector;
 	private readonly string _tokenStoragePath;
@@ -68,10 +68,7 @@ public sealed class SpotifySessionStore
 			return null;
 
 		PersistPending();
-		if (pending.ExpiresAt <= DateTimeOffset.UtcNow)
-			return null;
-
-		return pending;
+		return pending.ExpiresAt <= DateTimeOffset.UtcNow ? null : pending;
 	}
 
 	public SemaphoreSlim GetRefreshLock(string sessionId)

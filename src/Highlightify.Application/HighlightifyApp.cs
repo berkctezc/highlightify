@@ -52,7 +52,7 @@ public static class HighlightifyApp
 			}
 			catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException)
 			{
-				Console.Error.WriteLine($"Instagram fetch failed for '{source}': {ex.Message}");
+				await Console.Error.WriteLineAsync($"Instagram fetch failed for '{source}': {ex.Message}");
 				return 4;
 			}
 
