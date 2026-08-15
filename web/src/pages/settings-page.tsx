@@ -28,58 +28,58 @@ export function SettingsPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <header>
-        <p className="type-eyebrow flex items-center gap-2 text-primary"><ShieldCheckIcon className="size-4" weight="fill" /> Sistem durumu</p>
-        <h2 className="type-page-title mt-3">Bağlantılar ve tercihler.</h2>
-        <p className="type-body mt-3 max-w-2xl">Hesap bağlantını ve cihazında çalışan yerel yardımcıları tek yerden yönet.</p>
+        <p className="type-eyebrow flex items-center gap-2 text-primary"><ShieldCheckIcon className="size-4" weight="fill" /> System status</p>
+        <h2 className="type-page-title mt-3">Connections and preferences.</h2>
+        <p className="type-body mt-3 max-w-2xl">Manage your account connection and the local helpers running on your device from one place.</p>
       </header>
 
-      <section className="mt-8 overflow-hidden rounded-2xl border border-white/[0.07] bg-[#181818]" aria-label="Bağlantılar">
+      <section className="mt-8 overflow-hidden rounded-2xl border border-white/[0.07] bg-[#181818]" aria-label="Connections">
         <SettingRow
           icon={<span className="grid size-11 place-items-center rounded-full bg-black"><SpotifyLogoIcon className="size-6 text-[#1ed760]" weight="fill" /></span>}
           title={spotify.data?.profile?.displayName ?? "Spotify"}
-          description={spotify.data?.connected ? "Playlist oluşturma yetkin bu cihazda şifreli olarak saklanıyor." : "Eşleşmeleri bulmak ve playlist oluşturmak için hesabını bağla."}
+          description={spotify.data?.connected ? "Your playlist creation access is stored encrypted on this device." : "Connect your account to find matches and create playlists."}
           status={spotify.isPending
-            ? <Badge variant="secondary"><CircleNotchIcon className="animate-spin" weight="bold" /> Kontrol ediliyor</Badge>
+            ? <Badge variant="secondary"><CircleNotchIcon className="animate-spin" weight="bold" /> Checking</Badge>
             : spotify.isError
-              ? <Badge variant="warning"><XCircleIcon weight="fill" /> Erişilemedi</Badge>
-              : <StatusBadge ready={Boolean(spotify.data?.connected)} readyLabel="Bağlı" waitingLabel="Bağlı değil" />}
+              ? <Badge variant="warning"><XCircleIcon weight="fill" /> Unreachable</Badge>
+              : <StatusBadge ready={Boolean(spotify.data?.connected)} readyLabel="Connected" waitingLabel="Not connected" />}
           action={spotify.isPending
-            ? <Button variant="outline" disabled><CircleNotchIcon className="animate-spin" weight="bold" /> Bekleyin</Button>
+            ? <Button variant="outline" disabled><CircleNotchIcon className="animate-spin" weight="bold" /> Please wait</Button>
             : spotify.isError
-              ? <Button variant="outline" onClick={() => spotify.refetch()}><ArrowClockwiseIcon weight="bold" /> Tekrar dene</Button>
+              ? <Button variant="outline" onClick={() => spotify.refetch()}><ArrowClockwiseIcon weight="bold" /> Try again</Button>
               : spotify.data?.connected
-                ? <Button variant="outline" onClick={() => actions.disconnect.mutate()} disabled={actions.disconnect.isPending}><SignOutIcon weight="bold" /> Bağlantıyı kes</Button>
-                : <SpotifyConnectButton returnPath="/settings" disabled={!spotify.data?.configured}><KeyIcon weight="bold" /> Spotify'a bağlan</SpotifyConnectButton>}
+                ? <Button variant="outline" onClick={() => actions.disconnect.mutate()} disabled={actions.disconnect.isPending}><SignOutIcon weight="bold" /> Disconnect</Button>
+                : <SpotifyConnectButton returnPath="/settings" disabled={!spotify.data?.configured}><KeyIcon weight="bold" /> Connect Spotify</SpotifyConnectButton>}
         >
-          {!spotify.isPending && !spotify.data?.connected && <a href="https://support.spotify.com/us/article/cannot-remember-login/" target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground transition hover:text-white">Doğru giriş yöntemini bul <ArrowSquareOutIcon className="size-3" weight="bold" /></a>}
+          {!spotify.isPending && !spotify.data?.connected && <a href="https://support.spotify.com/us/article/cannot-remember-login/" target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground transition hover:text-white">Find the right sign-in method <ArrowSquareOutIcon className="size-3" weight="bold" /></a>}
         </SettingRow>
 
         <SettingRow
           icon={<span className="grid size-11 place-items-center rounded-xl bg-[#282828] text-white"><TerminalWindowIcon className="size-5" weight="duotone" /></span>}
-          title="Instagram okuyucu"
-          description="Özel Story ve Highlight'lar için seçtiğin tarayıcının yerel oturumunu kullanır."
-          status={<StatusBadge ready={Boolean(config.data?.ytDlpAvailable)} readyLabel="Hazır" waitingLabel="Bulunamadı" />}
+          title="Instagram reader"
+          description="Uses the local session of the browser you choose for private Stories and Highlights."
+          status={<StatusBadge ready={Boolean(config.data?.ytDlpAvailable)} readyLabel="Ready" waitingLabel="Not found" />}
           action={<code className="rounded-lg bg-black/35 px-3 py-2 text-[11px] text-muted-foreground">yt-dlp · local</code>}
         />
 
         <SettingRow
           icon={<span className="grid size-11 place-items-center rounded-xl bg-[#282828] text-white"><LaptopIcon className="size-5" weight="duotone" /></span>}
-          title="Desktop uygulaması"
-          description="Aynı arayüzü macOS ve Windows üzerinde kullanmak için planlanan paket."
-          status={<Badge variant="secondary"><CloudIcon weight="duotone" /> Planlandı</Badge>}
-          action={<span className="text-xs font-bold text-muted-foreground">Sonraki sürüm</span>}
+          title="Desktop app"
+          description="Planned package for using the same interface on macOS and Windows."
+          status={<Badge variant="secondary"><CloudIcon weight="duotone" /> Planned</Badge>}
+          action={<span className="text-xs font-bold text-muted-foreground">Next release</span>}
         />
       </section>
 
       <div className="mt-5 flex items-start gap-3 rounded-xl border border-white/[0.07] bg-[#181818]/70 p-4 text-xs leading-5 text-muted-foreground">
         <ShieldCheckIcon className="mt-0.5 size-4 shrink-0 text-primary" weight="duotone" />
-        <p>Spotify parolan hiçbir zaman Highlightify ile paylaşılmaz. Yetkilendirme Spotify'ın güvenli sayfasında tamamlanır; Instagram çerezleri cihazından ayrılmaz.</p>
+        <p>Your Spotify password is never shared with Highlightify. Authorization is completed on Spotify's secure page; your Instagram cookies never leave your device.</p>
       </div>
 
       {!config.data?.spotifyConfigured && (
         <div className="mt-5 flex items-start gap-3 rounded-xl border border-amber-300/15 bg-amber-300/[0.04] p-4">
           <KeyIcon className="mt-0.5 size-4 shrink-0 text-amber-300" weight="duotone" />
-          <div><p className="text-xs font-extrabold text-amber-200">Spotify Client ID gerekiyor</p><p className="mt-1 text-[11px] leading-5 text-muted-foreground"><code>SPOTIFY_CLIENT_ID</code> değerini ayarla ve callback olarak <code>http://127.0.0.1:5086/api/auth/spotify/callback</code> ekle.</p><a href="https://developer.spotify.com/dashboard" target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-amber-300 hover:underline">Spotify Dashboard <ArrowSquareOutIcon className="size-3" weight="bold" /></a></div>
+          <div><p className="text-xs font-extrabold text-amber-200">Spotify Client ID is required</p><p className="mt-1 text-[11px] leading-5 text-muted-foreground">Set <code>SPOTIFY_CLIENT_ID</code> and add <code>http://127.0.0.1:5086/api/auth/spotify/callback</code> as the callback URL.</p><a href="https://developer.spotify.com/dashboard" target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-amber-300 hover:underline">Spotify Dashboard <ArrowSquareOutIcon className="size-3" weight="bold" /></a></div>
         </div>
       )}
     </div>

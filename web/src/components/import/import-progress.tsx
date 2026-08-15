@@ -8,19 +8,19 @@ import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 
 const steps = [
-  { key: "source", label: "Kaynaklar", icon: ImagesIcon, threshold: 8 },
-  { key: "read", label: "Müzikler", icon: WaveformIcon, threshold: 35 },
-  { key: "match", label: "Eşleşmeler", icon: MagnifyingGlassIcon, threshold: 88 },
-  { key: "ready", label: "Hazır", icon: VinylRecordIcon, threshold: 100 },
+  { key: "source", label: "Sources", icon: ImagesIcon, threshold: 8 },
+  { key: "read", label: "Tracks", icon: WaveformIcon, threshold: 35 },
+  { key: "match", label: "Matches", icon: MagnifyingGlassIcon, threshold: 88 },
+  { key: "ready", label: "Ready", icon: VinylRecordIcon, threshold: 100 },
 ]
 
 export function ImportProgress({ job }: { job: ImportJob }) {
   return (
     <div className="mx-auto max-w-4xl py-6 sm:py-12">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-        <Badge><WaveformIcon className="size-3" weight="bold" /> Aktarım çalışıyor</Badge>
-        <h2 className="type-page-title mt-5">Highlight'ların dinleniyor.</h2>
-        <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">Sekmeyi açık tutabilirsin; bulunan müzikleri adım adım Spotify kataloğuyla eşleştiriyoruz.</p>
+        <Badge><WaveformIcon className="size-3" weight="bold" /> Transfer in progress</Badge>
+        <h2 className="type-page-title mt-5">Listening to your Highlights.</h2>
+        <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">You can keep this tab open; we are matching the music we find to the Spotify catalog step by step.</p>
       </motion.div>
 
       <Card className="mt-9 overflow-hidden sm:mt-12">
@@ -28,7 +28,7 @@ export function ImportProgress({ job }: { job: ImportJob }) {
           <div className="mb-7 flex items-end justify-between gap-4">
             <div>
               <p className="text-sm font-extrabold">{job.statusMessage}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{job.sources.length} kaynak · {job.tracks.length} müzik adayı</p>
+              <p className="mt-1 text-xs text-muted-foreground">{job.sources.length} sources · {job.tracks.length} track candidates</p>
             </div>
             <span className="text-3xl font-extrabold tracking-[-0.055em] text-primary">{job.progress}%</span>
           </div>

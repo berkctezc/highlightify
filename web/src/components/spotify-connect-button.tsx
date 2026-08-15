@@ -11,7 +11,7 @@ type SpotifyConnectButtonProps = Omit<ComponentProps<typeof Button>, "onClick" |
 export function SpotifyConnectButton({ returnPath = "/", children, ...buttonProps }: SpotifyConnectButtonProps) {
   return (
     <Button {...buttonProps} onClick={() => window.location.assign(spotifyLoginUrl(returnPath))}>
-      {children ?? <><SpotifyLogoIcon weight="fill" /> Spotify'a bağlan</>}
+      {children ?? <><SpotifyLogoIcon weight="fill" /> Connect Spotify</>}
     </Button>
   )
 }

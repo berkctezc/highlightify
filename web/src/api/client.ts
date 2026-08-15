@@ -36,7 +36,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     } catch {
       // A plain-text proxy or infrastructure error is shown with a useful fallback below.
     }
-    throw new ApiError(payload?.error ?? `İstek tamamlanamadı (${response.status}).`, response.status)
+    throw new ApiError(payload?.error ?? `Request could not be completed (${response.status}).`, response.status)
   }
 
   if (response.status === 204) return undefined as T

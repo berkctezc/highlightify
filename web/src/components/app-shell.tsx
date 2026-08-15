@@ -20,16 +20,16 @@ import { useSpotifyActions, useSpotifyConnection } from "@/hooks/use-spotify"
 import { cn } from "@/lib/utils"
 
 const navigation = [
-  { to: "/app", label: "Yeni aktarım", icon: PlusIcon, exact: true },
-  { to: "/history", label: "Geçmiş", icon: ClockCounterClockwiseIcon },
-  { to: "/settings", label: "Ayarlar", icon: GearSixIcon },
+  { to: "/app", label: "New transfer", icon: PlusIcon, exact: true },
+  { to: "/history", label: "History", icon: ClockCounterClockwiseIcon },
+  { to: "/settings", label: "Settings", icon: GearSixIcon },
 ]
 
 const routeMeta = {
-  home: { title: "New transfer", description: "Instagram müziklerini Spotify'a taşı" },
-  history: { title: "History", description: "Aktarımların ve sonuçların" },
-  settings: { title: "Configuration", description: "Bağlantılar ve yerel servisler" },
-  import: { title: "Transfer info", description: "Eşleşmeleri kontrol et" },
+  home: { title: "New transfer", description: "Transfer your Instagram music to Spotify" },
+  history: { title: "History", description: "Your transfers and results" },
+  settings: { title: "Settings", description: "Connections and local services" },
+  import: { title: "Transfer info", description: "Review your matches" },
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -46,12 +46,12 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background lg:grid lg:grid-cols-[236px_minmax(0,1fr)]">
-      <a href="#main-content" className="fixed left-4 top-4 z-50 -translate-y-24 rounded-full bg-white px-4 py-2 text-sm font-extrabold text-black transition focus:translate-y-0">İçeriğe geç</a>
+      <a href="#main-content" className="fixed left-4 top-4 z-50 -translate-y-24 rounded-full bg-white px-4 py-2 text-sm font-extrabold text-black transition focus:translate-y-0">Skip to content</a>
 
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[236px] flex-col bg-black px-3 py-5 lg:flex">
         <BrandMark className="px-3" />
 
-        <nav className="mt-9 space-y-1" aria-label="Ana navigasyon">
+        <nav className="mt-9 space-y-1" aria-label="Main navigation">
           {navigation.map((item) => <NavItem key={item.to} {...item} />)}
         </nav>
 
@@ -62,7 +62,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             onDisconnect={() => actions.disconnect.mutate()}
             returnPath={location.pathname}
           />
-          <p className="mt-4 px-3 text-[10px] font-semibold text-[#6a6a6a]">Highlightify · Bu cihazda çalışır</p>
+          <p className="mt-4 px-3 text-[10px] font-semibold text-[#6a6a6a]">Highlightify · Runs on this device</p>
         </div>
       </aside>
 
@@ -78,16 +78,16 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <div className="lg:hidden">
             {spotify.isPending ? (
-              <span className="grid size-9 place-items-center rounded-full bg-white/[0.06] text-muted-foreground" aria-label="Spotify bağlantısı kontrol ediliyor"><CircleNotchIcon className="size-4 animate-spin" weight="bold" /></span>
+              <span className="grid size-9 place-items-center rounded-full bg-white/[0.06] text-muted-foreground" aria-label="Checking Spotify connection"><CircleNotchIcon className="size-4 animate-spin" weight="bold" /></span>
             ) : spotify.data?.connected && spotify.data.profile ? (
               <Avatar className="size-9 ring-2 ring-[#1ed760]/25">
                 {spotify.data.profile.imageUrl && <AvatarImage src={spotify.data.profile.imageUrl} alt="" />}
                 <AvatarFallback>{spotify.data.profile.displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
             ) : spotify.isError ? (
-              <Button size="icon" variant="ghost" aria-label="Spotify bağlantısını yeniden kontrol et" onClick={() => spotify.refetch()}><ArrowClockwiseIcon weight="bold" /></Button>
+              <Button size="icon" variant="ghost" aria-label="Retry Spotify connection check" onClick={() => spotify.refetch()}><ArrowClockwiseIcon weight="bold" /></Button>
             ) : (
-              <SpotifyConnectButton size="sm" returnPath={location.pathname}>Bağlan</SpotifyConnectButton>
+              <SpotifyConnectButton size="sm" returnPath={location.pathname}>Connect</SpotifyConnectButton>
             )}
           </div>
         </header>
@@ -97,7 +97,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
       </div>
 
-      <nav className="safe-bottom fixed inset-x-3 bottom-3 z-40 grid grid-cols-3 rounded-[18px] border border-white/10 bg-[#0a0a0a]/94 p-1.5 shadow-[0_20px_60px_rgba(0,0,0,.55)] backdrop-blur-2xl lg:hidden" aria-label="Mobil navigasyon">
+      <nav className="safe-bottom fixed inset-x-3 bottom-3 z-40 grid grid-cols-3 rounded-[18px] border border-white/10 bg-[#0a0a0a]/94 p-1.5 shadow-[0_20px_60px_rgba(0,0,0,.55)] backdrop-blur-2xl lg:hidden" aria-label="Mobile navigation">
         {navigation.map((item) => <NavItem key={item.to} {...item} mobile />)}
       </nav>
     </div>
@@ -121,7 +121,7 @@ function SpotifyAccount({
     return (
       <div className="flex items-center gap-3 rounded-xl bg-[#181818] p-3" role="status">
         <CircleNotchIcon className="size-4 animate-spin text-muted-foreground" weight="bold" />
-        <span className="text-xs font-bold text-muted-foreground">Spotify kontrol ediliyor</span>
+        <span className="text-xs font-bold text-muted-foreground">Checking Spotify</span>
       </div>
     )
   }
@@ -135,13 +135,13 @@ function SpotifyAccount({
         </Avatar>
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs font-extrabold">{spotify.data.profile.displayName}</p>
-          <p className="mt-0.5 flex items-center gap-1.5 text-[10px] font-bold text-[#1ed760]"><span className="size-1.5 rounded-full bg-current" /> Spotify bağlı</p>
+          <p className="mt-0.5 flex items-center gap-1.5 text-[10px] font-bold text-[#1ed760]"><span className="size-1.5 rounded-full bg-current" /> Spotify connected</p>
         </div>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button size="icon" variant="ghost" className="size-8" aria-label="Spotify bağlantısını kes" onClick={onDisconnect}><SignOutIcon weight="bold" /></Button>
+            <Button size="icon" variant="ghost" className="size-8" aria-label="Disconnect Spotify" onClick={onDisconnect}><SignOutIcon weight="bold" /></Button>
           </TooltipTrigger>
-          <TooltipContent>Bağlantıyı kes</TooltipContent>
+          <TooltipContent>Disconnect</TooltipContent>
         </Tooltip>
       </div>
     )
@@ -151,15 +151,15 @@ function SpotifyAccount({
     return (
       <button type="button" onClick={onRetry} className="flex w-full items-center gap-3 rounded-xl bg-[#181818] p-3 text-left transition hover:bg-[#242424]">
         <ArrowClockwiseIcon className="size-4 text-muted-foreground" weight="bold" />
-        <span className="text-xs font-bold">Bağlantıyı yeniden kontrol et</span>
+        <span className="text-xs font-bold">Retry connection check</span>
       </button>
     )
   }
 
   return (
     <div className="rounded-xl bg-[#181818] p-3">
-      <div className="flex items-center gap-2 text-xs font-bold"><SpotifyLogoIcon className="size-[18px] text-white" weight="fill" /> Spotify bağlı değil</div>
-      <SpotifyConnectButton className="mt-3 w-full" size="sm" returnPath={returnPath}>Spotify'a bağlan</SpotifyConnectButton>
+      <div className="flex items-center gap-2 text-xs font-bold"><SpotifyLogoIcon className="size-[18px] text-white" weight="fill" /> Spotify not connected</div>
+      <SpotifyConnectButton className="mt-3 w-full" size="sm" returnPath={returnPath}>Connect Spotify</SpotifyConnectButton>
     </div>
   )
 }

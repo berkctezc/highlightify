@@ -18,9 +18,9 @@ import { Button } from "@/components/ui/button"
 gsap.registerPlugin(useGSAP, ScrollTrigger)
 
 const steps = [
-  { icon: LinkIcon, number: "01", title: "Bağlantıyı bırak", copy: "Story veya Highlight URL'lerini tek seferde ekle." },
-  { icon: WaveformIcon, number: "02", title: "Doğru parçayı seç", copy: "Bulunan Spotify sürümlerini karşılaştır ve sonucu doğrula." },
-  { icon: PlaylistIcon, number: "03", title: "Playlist'e gönder", copy: "Seçtiklerini yeni ya da mevcut listene ekle." },
+  { icon: LinkIcon, number: "01", title: "Add links", copy: "Add Story or Highlight URLs all at once." },
+  { icon: WaveformIcon, number: "02", title: "Find the right track", copy: "Compare the Spotify versions we found and confirm the result." },
+  { icon: PlaylistIcon, number: "03", title: "Send to playlist", copy: "Add your selections to a new or existing playlist." },
 ]
 
 export function LandingPage() {
@@ -69,25 +69,25 @@ export function LandingPage() {
       <header data-landing-nav className="relative z-30 mx-auto flex h-20 w-full max-w-[1280px] items-center justify-between px-5 sm:px-8">
         <BrandMark />
         <div className="flex items-center gap-2 sm:gap-3">
-          <a href="#nasil-calisir" className="hidden rounded-full px-4 py-2 text-xs font-bold text-muted-foreground transition hover:text-white sm:inline-flex">Nasıl çalışır?</a>
-          <Button size="sm" asChild><Link to="/app">Uygulamayı aç <ArrowRightIcon weight="bold" /></Link></Button>
+          <a href="#how-it-works" className="hidden rounded-full px-4 py-2 text-xs font-bold text-muted-foreground transition hover:text-white sm:inline-flex">How it works?</a>
+          <Button size="sm" asChild><Link to="/app">Launch app <ArrowRightIcon weight="bold" /></Link></Button>
         </div>
       </header>
 
       <main>
         <section className="relative mx-auto grid min-h-[calc(100svh-5rem)] w-full max-w-[1280px] items-center gap-8 px-5 pb-14 pt-8 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(360px,.72fr)] lg:gap-12 lg:pb-20 lg:pt-4">
           <div className="relative z-10 max-w-3xl">
-            <p data-landing-copy className="type-eyebrow flex items-center gap-2 text-primary"><span className="size-1.5 rounded-full bg-current shadow-[0_0_16px_currentColor]" /> Instagram müzik arşivin</p>
-            <h1 data-landing-copy className="type-landing-display mt-5">Hikâyeler geçer.<br /><span className="text-[#a7a7a7]">Müzikleri kalsın.</span></h1>
-            <p data-landing-copy className="type-body mt-6 max-w-xl">Story ve Highlight'larda keşfettiğin parçaları bul, doğru sürümü seç ve kendi Spotify playlist'ine taşı.</p>
+            <p data-landing-copy className="type-eyebrow flex items-center gap-2 text-primary"><span className="size-1.5 rounded-full bg-current shadow-[0_0_16px_currentColor]" /> Your Instagram Music Archive</p>
+            <h1 data-landing-copy className="type-landing-display mt-5">Stories are temporary.<br /><span className="text-[#a7a7a7]">Let the music live.</span></h1>
+            <p data-landing-copy className="type-body mt-6 max-w-xl">Find the tracks you discovered from Stories and Highlights, find correct versions and move to your own Spotify playlist.</p>
             <div data-landing-copy className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button size="lg" asChild><Link to="/app">Müziklerimi bul <ArrowRightIcon weight="bold" /></Link></Button>
-              <Button size="lg" variant="outline" asChild><a href="#nasil-calisir">Nasıl çalıştığını gör</a></Button>
+              <Button size="lg" asChild><Link to="/app">Find my tracks <ArrowRightIcon weight="bold" /></Link></Button>
+              <Button size="lg" variant="outline" asChild><a href="#how-it-works">See how it works</a></Button>
             </div>
             <div data-landing-copy className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-[11px] font-bold text-muted-foreground">
-              <span className="flex items-center gap-1.5"><CheckCircleIcon className="size-3.5 text-primary" weight="fill" /> Son kontrol sende</span>
-              <span className="flex items-center gap-1.5"><ShieldCheckIcon className="size-3.5 text-primary" weight="fill" /> Yerel ve güvenli</span>
-              <span className="flex items-center gap-1.5"><CheckCircleIcon className="size-3.5 text-primary" weight="fill" /> Tekrar giriş istemez</span>
+              <span className="flex items-center gap-1.5"><CheckCircleIcon className="size-3.5 text-primary" weight="fill" /> Control is on your hands</span>
+              <span className="flex items-center gap-1.5"><ShieldCheckIcon className="size-3.5 text-primary" weight="fill" /> Runs locally and is safe</span>
+              <span className="flex items-center gap-1.5"><CheckCircleIcon className="size-3.5 text-primary" weight="fill" /> No need for logging in again and again</span>
             </div>
           </div>
 
@@ -99,12 +99,12 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section id="nasil-calisir" className="scroll-mt-12 border-t border-white/[0.07] bg-[#0d0d0d] py-24 sm:py-28">
+        <section id="how-it-works" className="scroll-mt-12 border-t border-white/[0.07] bg-[#0d0d0d] py-24 sm:py-28">
           <div className="mx-auto w-full max-w-[1180px] px-5 sm:px-8">
             <div className="max-w-2xl">
-              <p className="type-eyebrow text-primary">Nasıl çalışır?</p>
-              <h2 className="type-page-title mt-4">Üç adım. Tek bir playlist.</h2>
-              <p className="type-body mt-4">Teknik ayrıntılar arkada kalır; seçim ve sonuç sende kalır.</p>
+              <p className="type-eyebrow text-primary">How does it work?</p>
+              <h2 className="type-page-title mt-4">Three steps. One playlist.</h2>
+              <p className="type-body mt-4">Technical details stay in the background; choice and result stay with you.</p>
             </div>
 
             <div data-steps className="mt-12 grid border-y border-white/[0.08] md:grid-cols-3">
@@ -122,14 +122,14 @@ export function LandingPage() {
 
         <section className="bg-[#0d0d0d] px-5 pb-24 pt-8 sm:px-8 sm:pb-28">
           <div data-final-cta className="mx-auto flex max-w-[1180px] flex-col items-start justify-between gap-8 overflow-hidden rounded-[24px] border border-primary/15 bg-[radial-gradient(circle_at_82%_10%,rgba(30,215,96,.17),transparent_35%),#181818] p-7 sm:p-10 lg:flex-row lg:items-center lg:p-12">
-            <div><p className="type-eyebrow text-primary">Hazırsan başlayalım</p><h2 className="type-page-title mt-3 max-w-2xl">İlk playlist'in bir bağlantı kadar yakın.</h2></div>
-            <Button size="lg" asChild><Link to="/app">Sisteme geç <ArrowRightIcon weight="bold" /></Link></Button>
+            <div><p className="type-eyebrow text-primary">Ready to start?</p><h2 className="type-page-title mt-3 max-w-2xl">Your first playlist is one link away.</h2></div>
+            <Button size="lg" asChild><Link to="/app">Go to the app <ArrowRightIcon weight="bold" /></Link></Button>
           </div>
         </section>
       </main>
 
       <footer className="border-t border-white/[0.07] bg-black">
-        <div className="mx-auto flex max-w-[1280px] flex-col gap-3 px-5 py-7 text-[10px] font-semibold text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-8"><BrandMark /><p>Highlightify bağımsız bir üründür. Spotify ile bağlantı yalnızca kullanıcı onayıyla kurulur.</p></div>
+        <div className="mx-auto flex max-w-[1280px] flex-col gap-3 px-5 py-7 text-[10px] font-semibold text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-8"><BrandMark /><p>Highlightify is an independent product. Spotify connection is established only with user approval.</p></div>
       </footer>
     </div>
   )

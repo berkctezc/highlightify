@@ -53,10 +53,10 @@ function OAuthNotice() {
   useEffect(() => {
     if (!result) return
     if (result === "connected") {
-      toast.success("Spotify hesabın bağlandı.")
+      toast.success("Your Spotify account is connected.")
       void queryClient.invalidateQueries({ queryKey: ["spotify"] })
     } else {
-      toast.error("Spotify bağlantısı tamamlanamadı. Tekrar deneyebilirsin.")
+      toast.error("Spotify connection could not be completed. Please try again.")
     }
     const next = new URLSearchParams(params)
     next.delete("spotify")
@@ -77,9 +77,9 @@ function NotFound() {
       <Card>
         <CardContent className="p-10 text-center">
           <p className="text-6xl font-extrabold tracking-[-0.06em] text-primary">404</p>
-          <h2 className="type-section-title mt-4">Bu parça listede yok.</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Aradığın sayfa taşınmış veya hiç oluşturulmamış olabilir.</p>
-          <Button className="mt-7" asChild><Link to="/app"><ArrowLeftIcon weight="bold" /> Uygulamaya dön</Link></Button>
+          <h2 className="type-section-title mt-4">This track is not on the list.</h2>
+          <p className="mt-2 text-sm text-muted-foreground">The page you are looking for may have been moved or never created.</p>
+          <Button className="mt-7" asChild><Link to="/app"><ArrowLeftIcon weight="bold" /> Return to the app</Link></Button>
         </CardContent>
       </Card>
     </div>
