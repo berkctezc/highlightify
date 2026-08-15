@@ -9,8 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Highlightify.Core\Highlightify.Core.csproj" />
-        <ProjectReference Include="..\Highlightify.Integrations\Highlightify.Integrations.csproj" />
+        <ProjectReference Include="..\Highlightify.Core\Highlightify.Core.csproj"/>
+        <ProjectReference Include="..\Highlightify.Integrations\Highlightify.Integrations.csproj"/>
     </ItemGroup>
 
 </Project>

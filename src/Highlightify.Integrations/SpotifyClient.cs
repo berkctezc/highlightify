@@ -194,6 +194,7 @@ public sealed class SpotifyClient : IDisposable
 			var difference = Math.Abs(candidate.DurationMs.Value - track.DurationMs);
 			score += Math.Max(0, 50 - difference / 100);
 		}
+
 		score += Math.Clamp(track.Popularity, 0, 100) / 10;
 
 		return score;
@@ -338,7 +339,8 @@ public sealed class SpotifyClient : IDisposable
 		IReadOnlyList<SpotifyArtist>? Artists,
 		SpotifyAlbum? Album,
 		SpotifyExternalIds? ExternalIds,
-		[property: JsonPropertyName("duration_ms")] int DurationMs,
+		[property: JsonPropertyName("duration_ms")]
+		int DurationMs,
 		int Popularity,
 		string Uri);
 

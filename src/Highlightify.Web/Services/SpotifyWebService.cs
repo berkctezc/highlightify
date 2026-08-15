@@ -58,8 +58,8 @@ public sealed class SpotifyWebService(
 		              ?? throw new InvalidOperationException("Spotify bağlantı isteğinin süresi doldu. Lütfen yeniden deneyin.");
 
 		if (!CryptographicOperations.FixedTimeEquals(
-		    Encoding.UTF8.GetBytes(pending.SessionId),
-		    Encoding.UTF8.GetBytes(sessionId)))
+			    Encoding.UTF8.GetBytes(pending.SessionId),
+			    Encoding.UTF8.GetBytes(sessionId)))
 			throw new InvalidOperationException("Spotify bağlantı oturumu doğrulanamadı.");
 
 		using var request = new HttpRequestMessage(HttpMethod.Post, "https://accounts.spotify.com/api/token")
@@ -218,7 +218,7 @@ public sealed class SpotifyWebService(
 				sessionId,
 				HttpMethod.Post,
 				$"playlists/{Uri.EscapeDataString(playlistId)}/items",
-				new { uris = batch },
+				new {uris = batch},
 				cancellationToken);
 		}
 	}
@@ -323,7 +323,7 @@ public sealed class SpotifyWebService(
 		var details = await response.Content.ReadAsStringAsync(cancellationToken);
 		if (details.Length > 500)
 			details = details[..500];
-		throw new InvalidOperationException($"{message} ({(int)response.StatusCode}). {details}".Trim());
+		throw new InvalidOperationException($"{message} ({(int) response.StatusCode}). {details}".Trim());
 	}
 
 	private static SpotifyTrackResponse? ParseTrack(JsonElement item, TrackCandidate candidate)
@@ -383,7 +383,7 @@ public sealed class SpotifyWebService(
 			score += 60;
 
 		if (!string.IsNullOrWhiteSpace(candidateArtist) && artists.Any(artist =>
-		    Normalize(artist) == candidateArtist || ContainsEither(Normalize(artist), candidateArtist)))
+			    Normalize(artist) == candidateArtist || ContainsEither(Normalize(artist), candidateArtist)))
 			score += 80;
 
 		if (!string.IsNullOrWhiteSpace(candidateAlbum))
@@ -399,6 +399,7 @@ public sealed class SpotifyWebService(
 			var difference = Math.Abs(candidate.DurationMs.Value - durationMs);
 			score += Math.Max(0, 50 - difference / 100);
 		}
+
 		score += Math.Clamp(popularity, 0, 100) / 10;
 
 		return score;
@@ -413,6 +414,7 @@ public sealed class SpotifyWebService(
 			yield return $"track:\"{candidate.Title}\" artist:\"{candidate.Artist}\"";
 			yield return $"{candidate.Title} {candidate.Artist}";
 		}
+
 		if (!string.IsNullOrWhiteSpace(candidate.Album))
 			yield return $"{candidate.Title} {candidate.Album}";
 		yield return candidate.Title;

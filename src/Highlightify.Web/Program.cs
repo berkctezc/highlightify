@@ -3,9 +3,9 @@ var builder = WebApplication.CreateBuilder(args);
 var spotifySettings = new SpotifySettings(
 	builder.Configuration["SPOTIFY_CLIENT_ID"] ?? builder.Configuration["Spotify:ClientId"],
 	builder.Configuration["SPOTIFY_REDIRECT_URI"] ?? builder.Configuration["Spotify:RedirectUri"]
-		?? "http://127.0.0.1:5086/api/auth/spotify/callback",
+	?? "http://127.0.0.1:5086/api/auth/spotify/callback",
 	builder.Configuration["HIGHLIGHTIFY_FRONTEND_URL"] ?? builder.Configuration["App:FrontendUrl"]
-		?? "http://127.0.0.1:5173");
+	?? "http://127.0.0.1:5173");
 
 var appDataPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data");
 var dataProtectionKeysPath = Path.Combine(appDataPath, "keys");
@@ -143,9 +143,9 @@ api.MapGet("/auth/spotify/callback", async (
 });
 
 api.MapGet("/auth/spotify/status", async (
-	HttpContext context,
-	SpotifyWebService spotify,
-	CancellationToken cancellationToken) =>
+		HttpContext context,
+		SpotifyWebService spotify,
+		CancellationToken cancellationToken) =>
 	Results.Ok(await spotify.GetConnectionAsync(SessionIdentity.GetOrCreate(context), cancellationToken)));
 
 api.MapPost("/auth/spotify/disconnect", (HttpContext context, SpotifyWebService spotify) =>
@@ -155,9 +155,9 @@ api.MapPost("/auth/spotify/disconnect", (HttpContext context, SpotifyWebService 
 });
 
 api.MapGet("/spotify/playlists", async (
-	HttpContext context,
-	SpotifyWebService spotify,
-	CancellationToken cancellationToken) =>
+		HttpContext context,
+		SpotifyWebService spotify,
+		CancellationToken cancellationToken) =>
 	Results.Ok(await spotify.GetPlaylistsAsync(SessionIdentity.GetOrCreate(context), cancellationToken)));
 
 api.MapGet("/imports", (HttpContext context, ImportJobService jobs) =>
@@ -215,11 +215,11 @@ api.MapPost("/imports/{id:guid}/match", (HttpContext context, Guid id, ImportJob
 });
 
 api.MapPost("/imports/{id:guid}/export", async (
-	HttpContext context,
-	Guid id,
-	ExportPlaylistRequest request,
-	ImportJobService jobs,
-	CancellationToken cancellationToken) =>
+		HttpContext context,
+		Guid id,
+		ExportPlaylistRequest request,
+		ImportJobService jobs,
+		CancellationToken cancellationToken) =>
 	Results.Ok(await jobs.ExportAsync(
 		SessionIdentity.GetOrCreate(context), id, request, cancellationToken)));
 

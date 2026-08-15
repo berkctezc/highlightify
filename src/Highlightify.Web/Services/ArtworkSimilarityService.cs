@@ -45,7 +45,7 @@ public sealed partial class ArtworkSimilarityService(
 
 				var distance = await CompareAsync(sourcePath, targetPath, cancellationToken);
 				var artworkBonus = distance is null ? 0 : ScoreDistance(distance.Value);
-				ranked.Add(track with { MatchScore = track.MatchScore + artworkBonus });
+				ranked.Add(track with {MatchScore = track.MatchScore + artworkBonus});
 			}
 
 			return ranked;
@@ -125,10 +125,10 @@ public sealed partial class ArtworkSimilarityService(
 		};
 		foreach (var argument in new[]
 		         {
-		         	"compare", "-metric", "RMSE",
-		         	"(", sourcePath, "-gravity", "south", "-crop", "100%x72%+0+0", "+repage", "-resize", "64x64!", ")",
-		         	"(", targetPath, "-gravity", "south", "-crop", "100%x72%+0+0", "+repage", "-resize", "64x64!", ")",
-		         	"null:"
+			         "compare", "-metric", "RMSE",
+			         "(", sourcePath, "-gravity", "south", "-crop", "100%x72%+0+0", "+repage", "-resize", "64x64!", ")",
+			         "(", targetPath, "-gravity", "south", "-crop", "100%x72%+0+0", "+repage", "-resize", "64x64!", ")",
+			         "null:"
 		         })
 			startInfo.ArgumentList.Add(argument);
 

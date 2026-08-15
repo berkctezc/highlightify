@@ -51,18 +51,18 @@ public sealed class InstagramHighlightFetcherTests
 		                    </body></html>
 		                    """;
 		const string apiJson = """
-		                    {
-		                      "story_music_stickers": [{
-		                        "music_asset_info": {
-		                          "title": "Bye Bye Bye",
-		                          "display_artist": "*NSYNC",
-		                          "duration_in_ms": 199253,
-		                          "cover_artwork_uri": "https://scontent.example.fbcdn.net/bye-bye-bye.jpg",
-		                          "audio_asset_id": "1076076147639666"
-		                        }
-		                      }]
-		                    }
-		                    """;
+		                       {
+		                         "story_music_stickers": [{
+		                           "music_asset_info": {
+		                             "title": "Bye Bye Bye",
+		                             "display_artist": "*NSYNC",
+		                             "duration_in_ms": 199253,
+		                             "cover_artwork_uri": "https://scontent.example.fbcdn.net/bye-bye-bye.jpg",
+		                             "audio_asset_id": "1076076147639666"
+		                           }
+		                         }]
+		                       }
+		                       """;
 
 		var candidate = Assert.Single(new InstagramHighlightFetcher().ExtractCandidates([html, apiJson], "story.html"));
 

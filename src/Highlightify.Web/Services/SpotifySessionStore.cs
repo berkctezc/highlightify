@@ -180,6 +180,7 @@ public sealed class SpotifySessionStore
 				{
 					File.SetUnixFileMode(temporaryPath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
 				}
+
 				File.Move(temporaryPath, storagePath, true);
 			}
 			finally

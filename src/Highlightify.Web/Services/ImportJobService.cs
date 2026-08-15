@@ -107,6 +107,7 @@ public sealed partial class ImportJobService(
 			job.Error = null;
 			job.UpdatedAt = DateTimeOffset.UtcNow;
 		}
+
 		PersistHistory();
 
 		try
@@ -141,6 +142,7 @@ public sealed partial class ImportJobService(
 				job.PlaylistUrl = playlistUrl;
 				job.UpdatedAt = DateTimeOffset.UtcNow;
 			}
+
 			PersistHistory();
 
 			return ToResponse(job);
@@ -155,6 +157,7 @@ public sealed partial class ImportJobService(
 				job.Error = FriendlyMessage(exception);
 				job.UpdatedAt = DateTimeOffset.UtcNow;
 			}
+
 			PersistHistory();
 			throw;
 		}
@@ -179,6 +182,7 @@ public sealed partial class ImportJobService(
 				job.Error = FriendlyMessage(exception);
 				job.UpdatedAt = DateTimeOffset.UtcNow;
 			}
+
 			PersistHistory();
 		}
 	}
@@ -207,7 +211,7 @@ public sealed partial class ImportJobService(
 			}
 
 			candidates.AddRange(found);
-			var progress = 10 + (int)Math.Round((index + 1d) / job.Sources.Count * 30);
+			var progress = 10 + (int) Math.Round((index + 1d) / job.Sources.Count * 30);
 			Update(job, ImportStatus.Reading, progress, $"{index + 1}/{job.Sources.Count} kaynak okundu");
 		}
 
@@ -250,7 +254,7 @@ public sealed partial class ImportJobService(
 			lock (job.SyncRoot)
 				job.Tracks = tracks.Concat(job.Candidates.Skip(index + 1).Select(ToUnmatchedTrack)).ToList();
 
-			var progress = 45 + (int)Math.Round((index + 1d) / job.Candidates.Count * 45);
+			var progress = 45 + (int) Math.Round((index + 1d) / job.Candidates.Count * 45);
 			Update(job, ImportStatus.Matching, progress, $"{index + 1}/{job.Candidates.Count} şarkı eşleştirildi");
 		}
 
@@ -294,6 +298,7 @@ public sealed partial class ImportJobService(
 			job.Error = null;
 			job.UpdatedAt = DateTimeOffset.UtcNow;
 		}
+
 		PersistHistory();
 	}
 
