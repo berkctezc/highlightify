@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-
 namespace Highlightify.Web.Services;
 
 public static class SessionIdentity

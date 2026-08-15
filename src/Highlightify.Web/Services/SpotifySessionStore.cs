@@ -1,8 +1,3 @@
-using System.Collections.Concurrent;
-using System.Security.Cryptography;
-using System.Text.Json;
-using Microsoft.AspNetCore.DataProtection;
-
 namespace Highlightify.Web.Services;
 
 public sealed record SpotifyTokenSession(

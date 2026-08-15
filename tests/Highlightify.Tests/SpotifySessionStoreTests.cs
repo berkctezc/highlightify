@@ -1,9 +1,3 @@
-using Highlightify.Web.Services;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging.Abstractions;
-
 namespace Highlightify.Tests;
 
 public sealed class SpotifySessionStoreTests

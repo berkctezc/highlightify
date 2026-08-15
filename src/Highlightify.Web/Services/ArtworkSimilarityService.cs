@@ -1,9 +1,3 @@
-using System.Diagnostics;
-using System.Globalization;
-using System.Text.RegularExpressions;
-using Highlightify.Core;
-using Highlightify.Web.Contracts;
-
 namespace Highlightify.Web.Services;
 
 public sealed partial class ArtworkSimilarityService(

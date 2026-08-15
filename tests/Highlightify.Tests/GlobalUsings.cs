@@ -1,1 +1,9 @@
+global using Highlightify.Core;
+global using Highlightify.Integrations;
+global using Highlightify.Web.Services;
+global using Microsoft.AspNetCore.DataProtection;
+global using Microsoft.AspNetCore.Http;
+global using Microsoft.Extensions.FileProviders;
+global using Microsoft.Extensions.Hosting;
+global using Microsoft.Extensions.Logging.Abstractions;
 global using Xunit;

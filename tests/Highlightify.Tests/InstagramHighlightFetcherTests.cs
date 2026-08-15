@@ -1,5 +1,3 @@
-using Highlightify.Integrations;
-
 namespace Highlightify.Tests;
 
 public sealed class InstagramHighlightFetcherTests

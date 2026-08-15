@@ -1,5 +1,3 @@
-using Highlightify.Core;
-
 namespace Highlightify.Tests;
 
 public sealed class HighlightSourceResolverTests

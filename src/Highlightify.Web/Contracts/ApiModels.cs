@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace Highlightify.Web.Contracts;
 
 public sealed record AppConfigurationResponse(

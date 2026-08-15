@@ -1,6 +1,3 @@
-using Highlightify.Web.Services;
-using Microsoft.AspNetCore.Http;
-
 namespace Highlightify.Tests;
 
 public sealed class SessionIdentityTests

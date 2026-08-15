@@ -1,11 +1,3 @@
-using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using Highlightify.Web.Contracts;
-using Highlightify.Web.Services;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Http.Features;
-
 var builder = WebApplication.CreateBuilder(args);
 
 var spotifySettings = new SpotifySettings(
