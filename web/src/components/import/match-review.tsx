@@ -81,7 +81,7 @@ export function MatchReview({ job }: { job: ImportJob }) {
         <div>
           <Badge variant="success"><CheckCircleIcon className="size-3" weight="fill" /> Matching complete</Badge>
           <h2 className="type-page-title mt-4">Final review is yours.</h2>
-          <p className="type-body mt-3">{matchedCount} matches found. You can change any track you want or leave it out of the transfer.</p>
+          <p className="type-body mt-3">{matchedCount} matches found. You can change any track or leave it out of the import.</p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => toggleAll()}>
           {allSelected ? <CircleIcon /> : <CheckCircleIcon weight="fill" />}{allSelected ? "Clear all" : "Select all"}

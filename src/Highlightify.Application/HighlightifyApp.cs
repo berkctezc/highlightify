@@ -131,14 +131,14 @@ public static class HighlightifyApp
 	private static void PrintUsage()
 	{
 		Console.WriteLine("""
-		                  highlightify fetches songs mentioned in Instagram story highlights and adds them to a Spotify playlist.
+		                  highlightify extracts songs from Instagram story highlights and adds them to a Spotify playlist.
 
 		                  Usage:
 		                    highlightify --highlight <id> [--highlight <id> ...] --spotify-client-id <id> [options]
 		                    highlightify --html <file> [--html <file> ...] --spotify-client-id <id> [options]
 
 		                  Required:
-		                    --spotify-client-id <id>     Spotify app client id
+		                    --spotify-client-id <id>     Spotify app client ID
 
 		                  Highlight input:
 		                    --highlight <id>             Instagram highlight ID to fetch
@@ -150,7 +150,7 @@ public static class HighlightifyApp
 
 		                  Spotify output:
 		                    --playlist-name <name>       Playlist name to create or reuse; defaults to "Instagram Highlights"
-		                    --playlist-id <id>           Existing playlist id to append to
+		                    --playlist-id <id>           Existing playlist ID to append to
 		                    --redirect-uri <uri>         OAuth redirect URI; defaults to http://127.0.0.1:54321/callback/
 		                    --no-browser                 Print auth URL instead of opening a browser
 

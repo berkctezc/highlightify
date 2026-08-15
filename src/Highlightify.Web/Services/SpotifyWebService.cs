@@ -200,7 +200,7 @@ public sealed class SpotifyWebService(
 
 		using var payload = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(cancellationToken), cancellationToken: cancellationToken);
 		var id = ReadString(payload.RootElement, "id")
-		         ?? throw new InvalidOperationException("Spotify did not return playlist Id.");
+		         ?? throw new InvalidOperationException("Spotify did not return a playlist ID.");
 		return (id, ReadNestedString(payload.RootElement, "external_urls", "spotify"));
 	}
 

@@ -32,7 +32,7 @@ public sealed partial class ImportJobService(
 			BrowserSource = NormalizeBrowserSource(input.BrowserSource),
 			Status = ImportStatus.Queued,
 			Progress = 2,
-			StatusMessage = "Transfer has been queued"
+			StatusMessage = "Import queued"
 		};
 
 		_jobs[job.Id] = job;
@@ -63,19 +63,20 @@ public sealed partial class ImportJobService(
 	{
 		EnsureHistoryLoaded();
 		if (!_jobs.TryGetValue(id, out var job) || job.SessionId != sessionId)
-			throw new KeyNotFoundException("Transfer not found.");
+			throw new KeyNotFoundException("Import not found.");
 
 		lock (job.SyncRoot)
 		{
 			if (job.Status is ImportStatus.Reading or ImportStatus.Matching or ImportStatus.Exporting)
-				throw new InvalidOperationException("Transfer is still processing.");
+				throw new InvalidOperationException("Import is still processing.");
 			if (job.Candidates.Count == 0)
-				throw new InvalidOperationException("Cannot find matching track.");
+				throw new InvalidOperationException("No tracks are available to rematch.");
 
 			job.Status = ImportStatus.Queued;
 			job.Progress = 45;
 			job.Error = null;
-			job.StatusMessage = "Spotify matches are being refreshed.";
+			job.StatusMessage = "Refreshing Spotify matches"
+				;
 			job.UpdatedAt = DateTimeOffset.UtcNow;
 		}
 
@@ -91,7 +92,7 @@ public sealed partial class ImportJobService(
 	{
 		EnsureHistoryLoaded();
 		if (!_jobs.TryGetValue(id, out var job) || job.SessionId != sessionId)
-			throw new KeyNotFoundException("Transfer could not be found.");
+			throw new KeyNotFoundException("Import not found.");
 
 		var requestedUris = request.TrackUris.Distinct(StringComparer.Ordinal).ToList() ?? [];
 		if (requestedUris.Count == 0)
@@ -102,15 +103,15 @@ public sealed partial class ImportJobService(
 			.Select(track => track.Uri)
 			.ToHashSet(StringComparer.Ordinal);
 		if (requestedUris.Any(uri => !allowedUris.Contains(uri)))
-			throw new ArgumentException("Geçersiz Spotify parçası seçildi.");
+			throw new ArgumentException("An invalid Spotify track was selected.");
 
 		lock (job.SyncRoot)
 		{
 			if (job.Status is not (ImportStatus.Ready or ImportStatus.Completed))
-				throw new InvalidOperationException("Transfer is not yet ready.");
+				throw new InvalidOperationException("Import is not ready yet.");
 			job.Status = ImportStatus.Exporting;
 			job.Progress = 92;
-			job.StatusMessage = "Playlist is being prepared";
+			job.StatusMessage = "Preparing playlist";
 			job.Error = null;
 			job.UpdatedAt = DateTimeOffset.UtcNow;
 		}
@@ -135,7 +136,7 @@ public sealed partial class ImportJobService(
 			{
 				playlistId = request.PlaylistId.Trim();
 				if (!SpotifyIdRegex().IsMatch(playlistId))
-					throw new ArgumentException("Spotify playlist id is invalid.");
+					throw new ArgumentException("Spotify playlist ID is invalid.");
 				playlistUrl = $"https://open.spotify.com/playlist/{playlistId}";
 			}
 
@@ -160,7 +161,7 @@ public sealed partial class ImportJobService(
 			{
 				job.Status = ImportStatus.Ready;
 				job.Progress = 90;
-				job.StatusMessage = "Playlist transfer could be retried.";
+				job.StatusMessage = "Playlist export can be retried.";
 				job.Error = FriendlyMessage(exception);
 				job.UpdatedAt = DateTimeOffset.UtcNow;
 			}
@@ -185,7 +186,7 @@ public sealed partial class ImportJobService(
 			lock (job.SyncRoot)
 			{
 				job.Status = ImportStatus.Failed;
-				job.StatusMessage = "Transfer could not be completed.";
+				job.StatusMessage = "Import could not be completed.";
 				job.Error = FriendlyMessage(exception);
 				job.UpdatedAt = DateTimeOffset.UtcNow;
 			}
@@ -224,7 +225,7 @@ public sealed partial class ImportJobService(
 
 		var distinct = candidates.DistinctBy(candidate => candidate.NormalizedKey).ToList();
 		if (distinct.Count == 0)
-			throw new InvalidOperationException("Could not find track info in sources.If it is private try browser authentication.");
+			throw new InvalidOperationException("Could not find track information in the provided sources. If the highlight is private, try browser authentication.");
 
 		lock (job.SyncRoot)
 		{
@@ -238,11 +239,11 @@ public sealed partial class ImportJobService(
 	{
 		if (spotifySessions.GetToken(job.SessionId) is null)
 		{
-			Update(job, ImportStatus.Ready, 90, $"{job.Candidates.Count} tracks have been found — to sync connect Spotify");
+			Update(job, ImportStatus.Ready, 90, $"{job.Candidates.Count} tracks found — connect Spotify to continue");
 			return;
 		}
 
-		Update(job, ImportStatus.Matching, 45, "Tracks are being synced to Spotify");
+		Update(job, ImportStatus.Matching, 45, "Matching tracks on Spotify");
 		var tracks = new List<ImportTrackResponse>();
 		for (var index = 0; index < job.Candidates.Count; index++)
 		{
@@ -336,10 +337,10 @@ public sealed partial class ImportJobService(
 				         Sources = [.. stored.SourceLabels.Select(label => new ImportSourceInput(label, null, null))],
 				         Status = wasInterrupted ? ImportStatus.Failed : stored.Status,
 				         Progress = stored.Progress,
-				         StatusMessage = wasInterrupted ? "Transfer has been stopped because of app shutdown." : stored.StatusMessage,
+				         StatusMessage = wasInterrupted ? "Import stopped because the app was shut down." : stored.StatusMessage,
 				         Candidates = stored.Candidates,
 				         Tracks = stored.Tracks,
-				         Error = wasInterrupted ? "Transfer has been interrupted. Try adding sources again." : stored.Error,
+				         Error = wasInterrupted ? "Import was interrupted. Try adding the sources again." : stored.Error,
 				         PlaylistId = stored.PlaylistId,
 				         PlaylistUrl = stored.PlaylistUrl
 			         })
@@ -399,7 +400,7 @@ public sealed partial class ImportJobService(
 	private static void ValidateInput(StartImportInput input)
 	{
 		if (input.Sources is null || input.Sources.Count == 0)
-			throw new ArgumentException("At least one Instagram highlight url or an HTML file is required for sync.");
+			throw new ArgumentException("Provide at least one Instagram highlight URL or HTML file to import.");
 		if (input.Sources.Count > 12)
 			throw new ArgumentException("Only up to 12 sources are supported at once.");
 
@@ -410,7 +411,7 @@ public sealed partial class ImportJobService(
 			if (!string.IsNullOrWhiteSpace(source.Html))
 			{
 				if (source.Html.Length > 6_000_000)
-					throw new ArgumentException($"{source.Label} file exceed 6MB.");
+					throw new ArgumentException($"{source.Label} exceeds the 6 MB file size limit.");
 				continue;
 			}
 
@@ -427,7 +428,7 @@ public sealed partial class ImportJobService(
 		if (!Uri.TryCreate(source, UriKind.Absolute, out var uri))
 		{
 			if (!HighlightIdRegex().IsMatch(source.Trim('/')))
-				throw new ArgumentException($"Invalid Instagram Highlight Id or URL: {source}");
+				throw new ArgumentException($"Invalid Instagram highlight ID or URL: {source}");
 			return;
 		}
 

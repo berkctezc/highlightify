@@ -132,17 +132,17 @@ public sealed class InstagramHighlightFetcher
 			{
 				if (RequiresFreshInstagramSession(stderr))
 					throw new InvalidOperationException(
-						"Instagram oturumu doğrulanamadı. Story'yi görüntülediğiniz tarayıcıyı seçin, "
-						+ "o tarayıcıda Instagram'a giriş yaptığınızdan emin olun ve yeniden deneyin.");
+						"Instagram session could not be validated. Select the browser where you viewed the story, "
+						+ "make sure you are signed in to Instagram in that browser, and try again.");
 
 				throw new InvalidOperationException(
-					"Instagram içeriği tarayıcı oturumuyla alınamadı. Story silinmiş veya süresi dolmuş olabilir.");
+					"Instagram content could not be fetched using the browser session. The story may have been deleted or expired.");
 			}
 
 			var payloads = ReadWrittenPayloads(tempDir);
 			return payloads.Count > 0
 				? payloads
-				: throw new InvalidOperationException("yt-dlp tamamlandı ancak okunabilir bir Instagram yanıtı oluşturmadı.");
+				: throw new InvalidOperationException("yt-dlp finished, but it did not produce a readable Instagram response.");
 		}
 		finally
 		{

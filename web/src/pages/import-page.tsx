@@ -35,11 +35,11 @@ export function ImportPage() {
 
   if (job.isLoading) return <ImportPageSkeleton />
   if (job.isError || !job.data) {
-    return <ErrorState title="Could not open transfer" message={(job.error as Error)?.message ?? "This transfer may no longer be available."} />
+    return <ErrorState title="Could not open import" message={(job.error as Error)?.message ?? "This import may no longer be available."} />
   }
 
   if (activeStatuses.includes(job.data.status)) return <ImportProgress job={job.data} />
-  if (job.data.status === "failed") return <ErrorState title="Transfer could not be completed" message={job.data.error ?? "An unexpected problem occurred."} />
+  if (job.data.status === "failed") return <ErrorState title="Import could not be completed" message={job.data.error ?? "An unexpected problem occurred."} />
   if (job.data.status === "completed") return <CompletedState job={job.data} />
 
   const hasAlternatives = job.data.tracks.some((track) => track.alternatives.length > 0)
@@ -65,7 +65,7 @@ export function ImportPage() {
               ) : (
                 <SpotifyConnectButton size="lg" returnPath={location.pathname}>Connect Spotify</SpotifyConnectButton>
               )}
-              <Button variant="outline" size="lg" asChild><Link to="/app">New transfer</Link></Button>
+              <Button variant="outline" size="lg" asChild><Link to="/app">New import</Link></Button>
             </div>
           </CardContent>
         </Card>
@@ -82,12 +82,12 @@ function CompletedState({ job }: { job: ImportJob }) {
       <Card className="overflow-hidden border-primary/15 bg-primary/[0.035] text-center">
         <CardContent className="p-8 sm:p-14">
           <span className="mx-auto grid size-20 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_0_60px_-15px_var(--primary)]"><CheckCircleIcon className="size-9" weight="fill" /></span>
-          <Badge className="mt-7" variant="success">Transfer completed</Badge>
+          <Badge className="mt-7" variant="success">Import completed</Badge>
           <h2 className="type-page-title mt-4">Your playlist is ready.</h2>
           <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-muted-foreground">{job.statusMessage}. You can start listening in the Spotify app.</p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             {job.playlistUrl && <Button size="lg" asChild><a href={job.playlistUrl} target="_blank" rel="noreferrer">Open in Spotify <ArrowSquareOutIcon weight="bold" /></a></Button>}
-            <Button size="lg" variant="outline" asChild><Link to="/app">New transfer</Link></Button>
+            <Button size="lg" variant="outline" asChild><Link to="/app">New import</Link></Button>
           </div>
         </CardContent>
       </Card>
@@ -103,7 +103,7 @@ function ErrorState({ title, message }: { title: string; message: string }) {
           <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-red-400/10 text-red-300"><WarningIcon className="size-6" weight="duotone" /></span>
           <h2 className="type-section-title mt-5">{title}</h2>
           <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted-foreground">{message}</p>
-          <Button className="mt-7" variant="outline" asChild><Link to="/app"><ArrowLeftIcon weight="bold" /> New transfer</Link></Button>
+          <Button className="mt-7" variant="outline" asChild><Link to="/app"><ArrowLeftIcon weight="bold" /> New import</Link></Button>
         </CardContent>
       </Card>
     </div>

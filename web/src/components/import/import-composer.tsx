@@ -35,9 +35,9 @@ import { cn } from "@/lib/utils"
 gsap.registerPlugin(useGSAP)
 
 const workflow = [
-  { icon: LinkIcon, title: "Add source", copy: "Story or Highlight link" },
-  { icon: WaveformIcon, title: "Verify source", copy: "Select correct track and version" },
-  { icon: PlaylistIcon, title: "Send to Playlist", copy: "New or existing playlist" },
+  { icon: LinkIcon, title: "Add sources", copy: "Story or highlight links" },
+  { icon: WaveformIcon, title: "Review matches", copy: "Choose the correct track and version" },
+  { icon: PlaylistIcon, title: "Export playlist", copy: "Create a new playlist or update an existing one" },
 ]
 
 export function ImportComposer() {
@@ -76,7 +76,7 @@ export function ImportComposer() {
 
   function addFiles(nextFiles: File[]) {
     const htmlFiles = nextFiles.filter((file) => /\.html?$/i.test(file.name) && file.size <= 6_000_000)
-    if (htmlFiles.length !== nextFiles.length) toast.error("Only HTML files smaller than 6MB allowed.")
+    if (htmlFiles.length !== nextFiles.length) toast.error("Only HTML files up to 6 MB are allowed.")
     setFiles((current) => [...current, ...htmlFiles]
       .filter((file, index, all) => all.findIndex((candidate) => candidate.name === file.name && candidate.size === file.size) === index)
       .slice(0, 12))
@@ -100,9 +100,9 @@ export function ImportComposer() {
         ...current.split(/\r?\n/).map((item) => item.trim()).filter(Boolean),
         ...nextSources,
       ])).join("\n"))
-      toast.success(nextSources.length === 1 ? "Connection added." : `${nextSources.length} connection added.`)
+      toast.success(nextSources.length === 1 ? "Source added." : `${nextSources.length} sources added.`)
     } catch {
-      toast.error("Cannot access clipboard. Paste link into the field.")
+      toast.error("Cannot access the clipboard. Paste the link into the field instead.")
     }
   }
 
@@ -113,7 +113,7 @@ export function ImportComposer() {
       return
     }
     if (sourceCount > 12) {
-      toast.error("Only 12 sources could be added at once.")
+      toast.error("You can add up to 12 sources at once.")
       return
     }
     startImport.mutate({ sources, files, browserSource: browserSource || config.data?.defaultBrowserSource || "none" })
@@ -255,7 +255,7 @@ export function ImportComposer() {
         </div>
       </form>
 
-      <section className="mt-10 grid gap-5 border-t border-white/[0.07] pt-7 md:grid-cols-3" aria-label="Transfer steps">
+      <section className="mt-10 grid gap-5 border-t border-white/[0.07] pt-7 md:grid-cols-3" aria-label="Import steps">
         {workflow.map(({ icon: Icon, title, copy }, index) => (
           <div data-workflow key={title} className="flex items-start gap-3">
             <span className="grid size-9 shrink-0 place-items-center rounded-full bg-white/[0.06] text-muted-foreground"><Icon className="size-4" weight="duotone" /></span>

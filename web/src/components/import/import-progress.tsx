@@ -18,7 +18,7 @@ export function ImportProgress({ job }: { job: ImportJob }) {
   return (
     <div className="mx-auto max-w-4xl py-6 sm:py-12">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-        <Badge><WaveformIcon className="size-3" weight="bold" /> Transfer in progress</Badge>
+        <Badge><WaveformIcon className="size-3" weight="bold" /> Import in progress</Badge>
         <h2 className="type-page-title mt-5">Listening to your Highlights.</h2>
         <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">You can keep this tab open; we are matching the music we find to the Spotify catalog step by step.</p>
       </motion.div>

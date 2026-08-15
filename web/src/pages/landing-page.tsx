@@ -19,8 +19,8 @@ gsap.registerPlugin(useGSAP, ScrollTrigger)
 
 const steps = [
   { icon: LinkIcon, number: "01", title: "Add links", copy: "Add Story or Highlight URLs all at once." },
-  { icon: WaveformIcon, number: "02", title: "Find the right track", copy: "Compare the Spotify versions we found and confirm the result." },
-  { icon: PlaylistIcon, number: "03", title: "Send to playlist", copy: "Add your selections to a new or existing playlist." },
+  { icon: WaveformIcon, number: "02", title: "Review matches", copy: "Compare the Spotify versions we found and confirm the right one." },
+  { icon: PlaylistIcon, number: "03", title: "Export playlist", copy: "Add your selections to a new or existing playlist." },
 ]
 
 export function LandingPage() {
@@ -69,7 +69,7 @@ export function LandingPage() {
       <header data-landing-nav className="relative z-30 mx-auto flex h-20 w-full max-w-[1280px] items-center justify-between px-5 sm:px-8">
         <BrandMark />
         <div className="flex items-center gap-2 sm:gap-3">
-          <a href="#how-it-works" className="hidden rounded-full px-4 py-2 text-xs font-bold text-muted-foreground transition hover:text-white sm:inline-flex">How it works?</a>
+          <a href="#how-it-works" className="hidden rounded-full px-4 py-2 text-xs font-bold text-muted-foreground transition hover:text-white sm:inline-flex">How it works</a>
           <Button size="sm" asChild><Link to="/app">Launch app <ArrowRightIcon weight="bold" /></Link></Button>
         </div>
       </header>
@@ -79,15 +79,15 @@ export function LandingPage() {
           <div className="relative z-10 max-w-3xl">
             <p data-landing-copy className="type-eyebrow flex items-center gap-2 text-primary"><span className="size-1.5 rounded-full bg-current shadow-[0_0_16px_currentColor]" /> Your Instagram Music Archive</p>
             <h1 data-landing-copy className="type-landing-display mt-5">Stories are temporary.<br /><span className="text-[#a7a7a7]">Let the music live.</span></h1>
-            <p data-landing-copy className="type-body mt-6 max-w-xl">Find the tracks you discovered from Stories and Highlights, find correct versions and move to your own Spotify playlist.</p>
+            <p data-landing-copy className="type-body mt-6 max-w-xl">Find tracks from Stories and Highlights, choose the right versions, and save them to your own Spotify playlist.</p>
             <div data-landing-copy className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button size="lg" asChild><Link to="/app">Find my tracks <ArrowRightIcon weight="bold" /></Link></Button>
               <Button size="lg" variant="outline" asChild><a href="#how-it-works">See how it works</a></Button>
             </div>
             <div data-landing-copy className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-[11px] font-bold text-muted-foreground">
-              <span className="flex items-center gap-1.5"><CheckCircleIcon className="size-3.5 text-primary" weight="fill" /> Control is on your hands</span>
+              <span className="flex items-center gap-1.5"><CheckCircleIcon className="size-3.5 text-primary" weight="fill" /> You stay in control</span>
               <span className="flex items-center gap-1.5"><ShieldCheckIcon className="size-3.5 text-primary" weight="fill" /> Runs locally and is safe</span>
-              <span className="flex items-center gap-1.5"><CheckCircleIcon className="size-3.5 text-primary" weight="fill" /> No need for logging in again and again</span>
+              <span className="flex items-center gap-1.5"><CheckCircleIcon className="size-3.5 text-primary" weight="fill" /> No repeated sign-ins required</span>
             </div>
           </div>
 
@@ -102,7 +102,7 @@ export function LandingPage() {
         <section id="how-it-works" className="scroll-mt-12 border-t border-white/[0.07] bg-[#0d0d0d] py-24 sm:py-28">
           <div className="mx-auto w-full max-w-[1180px] px-5 sm:px-8">
             <div className="max-w-2xl">
-              <p className="type-eyebrow text-primary">How does it work?</p>
+              <p className="type-eyebrow text-primary">How it works</p>
               <h2 className="type-page-title mt-4">Three steps. One playlist.</h2>
               <p className="type-body mt-4">Technical details stay in the background; choice and result stay with you.</p>
             </div>
@@ -129,7 +129,7 @@ export function LandingPage() {
       </main>
 
       <footer className="border-t border-white/[0.07] bg-black">
-        <div className="mx-auto flex max-w-[1280px] flex-col gap-3 px-5 py-7 text-[10px] font-semibold text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-8"><BrandMark /><p>Highlightify is an independent product. Spotify connection is established only with user approval.</p></div>
+        <div className="mx-auto flex max-w-[1280px] flex-col gap-3 px-5 py-7 text-[10px] font-semibold text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-8"><BrandMark /><p>Highlightify is an independent product. Spotify access is only granted with your approval.</p></div>
       </footer>
     </div>
   )

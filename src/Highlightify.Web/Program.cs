@@ -69,7 +69,7 @@ app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
 		KeyNotFoundException => (StatusCodes.Status404NotFound, exception.Message),
 		ArgumentException => (StatusCodes.Status400BadRequest, exception.Message),
 		InvalidOperationException => (StatusCodes.Status409Conflict, exception.Message),
-		_ => (StatusCodes.Status500InternalServerError, "Beklenmeyen bir hata oluştu.")
+		_ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred.")
 	};
 
 	context.Response.StatusCode = status;
@@ -201,7 +201,7 @@ api.MapGet("/imports", (HttpContext context, ImportJobService jobs) =>
 api.MapGet("/imports/{id:guid}", (HttpContext context, Guid id, ImportJobService jobs) =>
 	jobs.Get(SessionIdentity.GetOrCreate(context), id) is { } job
 		? Results.Ok(job)
-		: Results.NotFound(new ApiErrorResponse("Transfer could not be found.")));
+		: Results.NotFound(new ApiErrorResponse("Import not found.")));
 
 api.MapPost("/imports", async (
 	HttpContext context,
@@ -209,7 +209,7 @@ api.MapPost("/imports", async (
 	CancellationToken cancellationToken) =>
 {
 	if (!context.Request.HasFormContentType)
-		return Results.BadRequest(new ApiErrorResponse("Transfer should be sent as multipart/form-data."));
+		return Results.BadRequest(new ApiErrorResponse("Import requests must use multipart/form-data."));
 
 	var form = await context.Request.ReadFormAsync(cancellationToken);
 	var sources = new List<ImportSourceInput>();
@@ -227,7 +227,7 @@ api.MapPost("/imports", async (
 		if (file.Length == 0)
 			continue;
 		if (file.Length > 6_000_000 || totalFileSize > 12_000_000)
-			return Results.BadRequest(new ApiErrorResponse("HTML files could not exceed 6MB and be 12 files maximum."));
+			return Results.BadRequest(new ApiErrorResponse("HTML files must be 6 MB or smaller, with a combined total of 12 MB or less."));
 		if (!Path.GetExtension(file.FileName).Equals(".html", StringComparison.OrdinalIgnoreCase) &&
 		    !Path.GetExtension(file.FileName).Equals(".htm", StringComparison.OrdinalIgnoreCase))
 			return Results.BadRequest(new ApiErrorResponse("Only .html and .htm formats are supported."));
@@ -259,7 +259,7 @@ api.MapPost("/imports/{id:guid}/export", async (
 		SessionIdentity.GetOrCreate(context), id, request, cancellationToken)));
 
 api.MapMethods("/{**path}", ["GET", "POST", "PUT", "PATCH", "DELETE"], () =>
-	Results.NotFound(new ApiErrorResponse("API adress could not be found.")));
+	Results.NotFound(new ApiErrorResponse("API address not found.")));
 
 app.MapFallback(async context =>
 {
@@ -272,7 +272,7 @@ app.MapFallback(async context =>
 	}
 
 	context.Response.StatusCode = StatusCodes.Status404NotFound;
-	await context.Response.WriteAsync("Highlightify frontend build could not be found. run 'pnpm build' on web directory.");
+	await context.Response.WriteAsync("Highlightify frontend build was not found. Run 'pnpm build' in the web directory.");
 });
 
 app.Run();

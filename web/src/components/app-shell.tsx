@@ -20,16 +20,16 @@ import { useSpotifyActions, useSpotifyConnection } from "@/hooks/use-spotify"
 import { cn } from "@/lib/utils"
 
 const navigation = [
-  { to: "/app", label: "New transfer", icon: PlusIcon, exact: true },
+  { to: "/app", label: "New import", icon: PlusIcon, exact: true },
   { to: "/history", label: "History", icon: ClockCounterClockwiseIcon },
   { to: "/settings", label: "Settings", icon: GearSixIcon },
 ]
 
 const routeMeta = {
-  home: { title: "New transfer", description: "Transfer your Instagram music to Spotify" },
-  history: { title: "History", description: "Your transfers and results" },
-  settings: { title: "Settings", description: "Connections and local services" },
-  import: { title: "Transfer info", description: "Review your matches" },
+  home: { title: "New import", description: "Import music from Instagram to Spotify" },
+  history: { title: "History", description: "Your past imports and results" },
+  settings: { title: "Settings", description: "Connections and local tools" },
+  import: { title: "Import details", description: "Review your matches" },
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
