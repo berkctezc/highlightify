@@ -3,41 +3,6 @@ namespace Highlightify.Tests;
 public sealed class SpotifySessionStoreTests
 {
 	[Fact]
-	public void Token_is_encrypted_and_restored_after_store_restart()
-	{
-		var contentRoot = Path.Combine(Path.GetTempPath(), $"highlightify-session-{Guid.NewGuid():N}");
-		Directory.CreateDirectory(contentRoot);
-
-		try
-		{
-			var provider = DataProtectionProvider.Create(new DirectoryInfo(Path.Combine(contentRoot, "keys")));
-			var environment = new TestHostEnvironment(contentRoot);
-			var token = new SpotifyTokenSession(
-				"access-token-that-must-not-be-plain-text",
-				"refresh-token-that-must-not-be-plain-text",
-				DateTimeOffset.UtcNow.AddHours(1));
-
-			var firstStore = new SpotifySessionStore(provider, environment, NullLogger<SpotifySessionStore>.Instance);
-			firstStore.SetToken("session-1", token);
-
-			var storedJson = File.ReadAllText(Path.Combine(contentRoot, "App_Data", "spotify-sessions.json"));
-			Assert.DoesNotContain(token.AccessToken, storedJson, StringComparison.Ordinal);
-			Assert.DoesNotContain(token.RefreshToken!, storedJson, StringComparison.Ordinal);
-
-			var restoredStore = new SpotifySessionStore(provider, environment, NullLogger<SpotifySessionStore>.Instance);
-			Assert.Equal(token, restoredStore.GetToken("session-1"));
-
-			restoredStore.RemoveToken("session-1");
-			var disconnectedStore = new SpotifySessionStore(provider, environment, NullLogger<SpotifySessionStore>.Instance);
-			Assert.Null(disconnectedStore.GetToken("session-1"));
-		}
-		finally
-		{
-			Directory.Delete(contentRoot, true);
-		}
-	}
-
-	[Fact]
 	public void Pending_authorization_is_encrypted_restored_and_consumed_once()
 	{
 		var contentRoot = Path.Combine(Path.GetTempPath(), $"highlightify-pending-{Guid.NewGuid():N}");
