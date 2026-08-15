@@ -55,12 +55,12 @@ public sealed class SpotifyWebService(
 	{
 		EnsureConfigured();
 		var pending = sessionStore.TakePending(state)
-		              ?? throw new InvalidOperationException("Spotify bağlantı isteğinin süresi doldu. Lütfen yeniden deneyin.");
+		              ?? throw new InvalidOperationException("Spotify connection request timed out. Please try again.");
 
 		if (!CryptographicOperations.FixedTimeEquals(
 			    Encoding.UTF8.GetBytes(pending.SessionId),
 			    Encoding.UTF8.GetBytes(sessionId)))
-			throw new InvalidOperationException("Spotify bağlantı oturumu doğrulanamadı.");
+			throw new InvalidOperationException("Spotify connection session cannot be validated.");
 
 		using var request = new HttpRequestMessage(HttpMethod.Post, "https://accounts.spotify.com/api/token")
 		{
@@ -75,7 +75,7 @@ public sealed class SpotifyWebService(
 		};
 
 		using var response = await httpClientFactory.CreateClient().SendAsync(request, cancellationToken);
-		await EnsureSuccessAsync(response, "Spotify yetkilendirmesi tamamlanamadı", cancellationToken);
+		await EnsureSuccessAsync(response, "Spotify authorization could not be completed.", cancellationToken);
 		var token = await ReadTokenAsync(response, cancellationToken);
 		sessionStore.SetToken(sessionId, token);
 		return pending.ReturnPath;
@@ -189,18 +189,18 @@ public sealed class SpotifyWebService(
 	{
 		var trimmedName = name.Trim();
 		if (trimmedName.Length is < 1 or > 100)
-			throw new ArgumentException("Playlist adı 1 ile 100 karakter arasında olmalı.");
+			throw new ArgumentException("Playlist name should be between 1-100 characters.");
 
 		using var response = await SendAsync(sessionId, HttpMethod.Post, "me/playlists", new
 		{
 			name = trimmedName,
 			@public = isPublic,
-			description = "Instagram Highlight müziklerinden Highlightify ile oluşturuldu."
+			description = "Created by Highlightify with 🫶."
 		}, cancellationToken);
 
 		using var payload = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(cancellationToken), cancellationToken: cancellationToken);
 		var id = ReadString(payload.RootElement, "id")
-		         ?? throw new InvalidOperationException("Spotify playlist kimliği döndürmedi.");
+		         ?? throw new InvalidOperationException("Spotify did not return playlist Id.");
 		return (id, ReadNestedString(payload.RootElement, "external_urls", "spotify"));
 	}
 
@@ -211,7 +211,7 @@ public sealed class SpotifyWebService(
 		CancellationToken cancellationToken)
 	{
 		if (string.IsNullOrWhiteSpace(playlistId))
-			throw new ArgumentException("Playlist seçilmedi.");
+			throw new ArgumentException("Playlist could not be selected.");
 
 		foreach (var batch in trackUris.Distinct(StringComparer.Ordinal).Chunk(100))
 		{
@@ -242,12 +242,12 @@ public sealed class SpotifyWebService(
 		{
 			response.Dispose();
 			sessionStore.RemoveToken(sessionId);
-			throw new UnauthorizedAccessException("Spotify oturumunun süresi doldu. Lütfen yeniden bağlanın.");
+			throw new UnauthorizedAccessException("Spotify session expired. Please try again.");
 		}
 
 		try
 		{
-			await EnsureSuccessAsync(response, "Spotify isteği başarısız oldu", cancellationToken);
+			await EnsureSuccessAsync(response, "Spotify request has been failed.", cancellationToken);
 			return response;
 		}
 		catch
@@ -260,7 +260,7 @@ public sealed class SpotifyWebService(
 	private async Task<string> GetAccessTokenAsync(string sessionId, CancellationToken cancellationToken)
 	{
 		var token = sessionStore.GetToken(sessionId)
-		            ?? throw new UnauthorizedAccessException("Önce Spotify hesabınızı bağlayın.");
+		            ?? throw new UnauthorizedAccessException("First you need to connect yout Spotify account.");
 		if (token.ExpiresAt > DateTimeOffset.UtcNow.AddMinutes(1))
 			return token.AccessToken;
 
@@ -269,13 +269,13 @@ public sealed class SpotifyWebService(
 		try
 		{
 			token = sessionStore.GetToken(sessionId)
-			        ?? throw new UnauthorizedAccessException("Spotify oturumunun süresi doldu.");
+			        ?? throw new UnauthorizedAccessException("Spotify session timed out.");
 			if (token.ExpiresAt > DateTimeOffset.UtcNow.AddMinutes(1))
 				return token.AccessToken;
 			if (string.IsNullOrWhiteSpace(token.RefreshToken))
 			{
 				sessionStore.RemoveToken(sessionId);
-				throw new UnauthorizedAccessException("Spotify oturumunu yenilemek için yeniden bağlanın.");
+				throw new UnauthorizedAccessException("To refresh the Spotify session please reconnect.");
 			}
 
 			using var request = new HttpRequestMessage(HttpMethod.Post, "https://accounts.spotify.com/api/token")
@@ -289,7 +289,7 @@ public sealed class SpotifyWebService(
 			};
 
 			using var response = await httpClientFactory.CreateClient().SendAsync(request, cancellationToken);
-			await EnsureSuccessAsync(response, "Spotify oturumu yenilenemedi", cancellationToken);
+			await EnsureSuccessAsync(response, "Spotify session could not be refreshed.", cancellationToken);
 			var refreshed = await ReadTokenAsync(response, cancellationToken, token.RefreshToken);
 			sessionStore.SetToken(sessionId, refreshed);
 			return refreshed.AccessToken;
@@ -307,7 +307,7 @@ public sealed class SpotifyWebService(
 	{
 		using var payload = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(cancellationToken), cancellationToken: cancellationToken);
 		var accessToken = ReadString(payload.RootElement, "access_token")
-		                  ?? throw new InvalidOperationException("Spotify erişim anahtarı döndürmedi.");
+		                  ?? throw new InvalidOperationException("Spotify did not return access key.");
 		var refreshToken = ReadString(payload.RootElement, "refresh_token") ?? fallbackRefreshToken;
 		var expiresIn = ReadInt(payload.RootElement, "expires_in", 3600);
 		return new SpotifyTokenSession(accessToken, refreshToken, DateTimeOffset.UtcNow.AddSeconds(expiresIn));
@@ -422,7 +422,7 @@ public sealed class SpotifyWebService(
 	private void EnsureConfigured()
 	{
 		if (!IsConfigured)
-			throw new InvalidOperationException("SPOTIFY_CLIENT_ID yapılandırılmadı.");
+			throw new InvalidOperationException("SPOTIFY_CLIENT_ID is not configured.");
 	}
 
 	private static string NormalizeReturnPath(string returnPath)

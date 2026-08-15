@@ -209,7 +209,7 @@ api.MapPost("/imports", async (
 	CancellationToken cancellationToken) =>
 {
 	if (!context.Request.HasFormContentType)
-		return Results.BadRequest(new ApiErrorResponse("Transfer should be sent as Aktarım multipart/form-data."));
+		return Results.BadRequest(new ApiErrorResponse("Transfer should be sent as multipart/form-data."));
 
 	var form = await context.Request.ReadFormAsync(cancellationToken);
 	var sources = new List<ImportSourceInput>();
