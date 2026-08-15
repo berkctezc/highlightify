@@ -147,7 +147,7 @@ public sealed partial class ArtworkSimilarityService(
 		catch (OperationCanceledException)
 		{
 			if (!process.HasExited)
-				process.Kill(entireProcessTree: true);
+				process.Kill(true);
 			throw;
 		}
 
@@ -166,15 +166,18 @@ public sealed partial class ArtworkSimilarityService(
 			: null;
 	}
 
-	private static int ScoreDistance(double distance) => distance switch
+	private static int ScoreDistance(double distance)
 	{
-		<= 0.24 => 30,
-		<= 0.32 => 24,
-		<= 0.40 => 16,
-		<= 0.50 => 8,
-		<= 0.60 => 3,
-		_ => 0
-	};
+		return distance switch
+		{
+			<= 0.24 => 30,
+			<= 0.32 => 24,
+			<= 0.40 => 16,
+			<= 0.50 => 8,
+			<= 0.60 => 3,
+			_ => 0
+		};
+	}
 
 	private static bool TryGetAllowedUri(
 		string? value,
@@ -193,13 +196,17 @@ public sealed partial class ArtworkSimilarityService(
 		return false;
 	}
 
-	private static bool IsInstagramArtworkHost(string host) =>
-		host.EndsWith(".fbcdn.net", StringComparison.OrdinalIgnoreCase) ||
-		host.EndsWith(".cdninstagram.com", StringComparison.OrdinalIgnoreCase);
+	private static bool IsInstagramArtworkHost(string host)
+	{
+		return host.EndsWith(".fbcdn.net", StringComparison.OrdinalIgnoreCase) ||
+		       host.EndsWith(".cdninstagram.com", StringComparison.OrdinalIgnoreCase);
+	}
 
-	private static bool IsSpotifyArtworkHost(string host) =>
-		host.Equals("i.scdn.co", StringComparison.OrdinalIgnoreCase) ||
-		host.EndsWith(".scdn.co", StringComparison.OrdinalIgnoreCase);
+	private static bool IsSpotifyArtworkHost(string host)
+	{
+		return host.Equals("i.scdn.co", StringComparison.OrdinalIgnoreCase) ||
+		       host.EndsWith(".scdn.co", StringComparison.OrdinalIgnoreCase);
+	}
 
 	private static string? FindExecutable(string name)
 	{
@@ -216,7 +223,7 @@ public sealed partial class ArtworkSimilarityService(
 		try
 		{
 			if (Directory.Exists(path))
-				Directory.Delete(path, recursive: true);
+				Directory.Delete(path, true);
 		}
 		catch
 		{

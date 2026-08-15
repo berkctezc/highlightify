@@ -5,9 +5,9 @@ public sealed class SpotifyClient : IDisposable
 	private const string PlaylistModifyScope = "playlist-modify-private playlist-modify-public playlist-read-private";
 
 	private readonly string _clientId;
-	private readonly string _redirectUri;
-	private readonly bool _openBrowser;
 	private readonly HttpClient _httpClient;
+	private readonly bool _openBrowser;
+	private readonly string _redirectUri;
 	private SpotifyTokenCache? _token;
 
 	public SpotifyClient(string clientId, string redirectUri, bool openBrowser, HttpClient? httpClient = null)
@@ -17,6 +17,11 @@ public sealed class SpotifyClient : IDisposable
 		_openBrowser = openBrowser;
 		_httpClient = httpClient ?? new HttpClient();
 		_httpClient.BaseAddress ??= new Uri("https://api.spotify.com/v1/");
+	}
+
+	public void Dispose()
+	{
+		_httpClient.Dispose();
 	}
 
 	public async Task AuthenticateAsync(CancellationToken cancellationToken = default)
@@ -80,7 +85,7 @@ public sealed class SpotifyClient : IDisposable
 		}, cancellationToken);
 		response.EnsureSuccessStatusCode();
 
-		var created = await response.Content.ReadFromJsonAsync<SpotifyPlaylistResponse>(cancellationToken: cancellationToken)
+		var created = await response.Content.ReadFromJsonAsync<SpotifyPlaylistResponse>(cancellationToken)
 		              ?? throw new InvalidOperationException("Spotify returned an empty playlist response.");
 		return created.Id;
 	}
@@ -94,7 +99,7 @@ public sealed class SpotifyClient : IDisposable
 			if (!response.IsSuccessStatusCode)
 				continue;
 
-			var payload = await response.Content.ReadFromJsonAsync<SpotifySearchResponse>(cancellationToken: cancellationToken);
+			var payload = await response.Content.ReadFromJsonAsync<SpotifySearchResponse>(cancellationToken);
 			var track = ChooseBestTrack(candidate, payload?.Tracks?.Items);
 			if (track?.Uri is not null)
 				return track.Uri;
@@ -200,10 +205,12 @@ public sealed class SpotifyClient : IDisposable
 		return score;
 	}
 
-	private static string Normalize(string? value) =>
-		string.IsNullOrWhiteSpace(value)
+	private static string Normalize(string? value)
+	{
+		return string.IsNullOrWhiteSpace(value)
 			? string.Empty
 			: value.Trim().ToLowerInvariant();
+	}
 
 	private string BuildAuthorizeUrl(string codeChallenge, string state)
 	{
@@ -261,7 +268,7 @@ public sealed class SpotifyClient : IDisposable
 			cancellationToken);
 		response.EnsureSuccessStatusCode();
 
-		var token = await response.Content.ReadFromJsonAsync<SpotifyTokenResponse>(cancellationToken: cancellationToken)
+		var token = await response.Content.ReadFromJsonAsync<SpotifyTokenResponse>(cancellationToken)
 		            ?? throw new InvalidOperationException("Spotify returned an empty token response.");
 
 		return SpotifyTokenCache.From(token);
@@ -282,7 +289,7 @@ public sealed class SpotifyClient : IDisposable
 			cancellationToken);
 		response.EnsureSuccessStatusCode();
 
-		var token = await response.Content.ReadFromJsonAsync<SpotifyTokenResponse>(cancellationToken: cancellationToken)
+		var token = await response.Content.ReadFromJsonAsync<SpotifyTokenResponse>(cancellationToken)
 		            ?? throw new InvalidOperationException("Spotify returned an empty refresh response.");
 
 		return SpotifyTokenCache.From(token, refreshToken);
@@ -323,9 +330,25 @@ public sealed class SpotifyClient : IDisposable
 		}
 	}
 
-	public void Dispose()
+	private static Dictionary<string, string> ParseQuery(string queryString)
 	{
-		_httpClient.Dispose();
+		var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+		var trimmed = queryString.TrimStart('?');
+		if (string.IsNullOrWhiteSpace(trimmed))
+			return result;
+
+		foreach (var pair in trimmed.Split('&', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+		{
+			var equalsIndex = pair.IndexOf('=');
+			if (equalsIndex < 0)
+				continue;
+
+			var key = Uri.UnescapeDataString(pair[..equalsIndex].Replace('+', ' '));
+			var value = Uri.UnescapeDataString(pair[(equalsIndex + 1)..].Replace('+', ' '));
+			result[key] = value;
+		}
+
+		return result;
 	}
 
 	private sealed record SpotifyPlaylistResponse(string Id);
@@ -380,27 +403,6 @@ public sealed class SpotifyClient : IDisposable
 		};
 	}
 
-	private static Dictionary<string, string> ParseQuery(string queryString)
-	{
-		var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-		var trimmed = queryString.TrimStart('?');
-		if (string.IsNullOrWhiteSpace(trimmed))
-			return result;
-
-		foreach (var pair in trimmed.Split('&', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-		{
-			var equalsIndex = pair.IndexOf('=');
-			if (equalsIndex < 0)
-				continue;
-
-			var key = Uri.UnescapeDataString(pair[..equalsIndex].Replace('+', ' '));
-			var value = Uri.UnescapeDataString(pair[(equalsIndex + 1)..].Replace('+', ' '));
-			result[key] = value;
-		}
-
-		return result;
-	}
-
 	private sealed record Pkce(string CodeVerifier, string CodeChallenge)
 	{
 		public static Pkce Create()
@@ -412,10 +414,12 @@ public sealed class SpotifyClient : IDisposable
 			return new Pkce(verifier, challenge);
 		}
 
-		private static string Base64UrlEncode(byte[] bytes) =>
-			Convert.ToBase64String(bytes)
+		private static string Base64UrlEncode(byte[] bytes)
+		{
+			return Convert.ToBase64String(bytes)
 				.TrimEnd('=')
 				.Replace('+', '-')
 				.Replace('/', '_');
+		}
 	}
 }

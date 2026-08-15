@@ -14,15 +14,15 @@ public sealed record PendingSpotifyAuthorization(
 
 public sealed class SpotifySessionStore
 {
-	private readonly ConcurrentDictionary<string, SpotifyTokenSession> _tokens = new();
-	private readonly ConcurrentDictionary<string, PendingSpotifyAuthorization> _pending = new();
-	private readonly ConcurrentDictionary<string, SemaphoreSlim> _refreshLocks = new();
-	private readonly IDataProtector _tokenProtector;
-	private readonly IDataProtector _pendingProtector;
 	private readonly ILogger<SpotifySessionStore> _logger;
-	private readonly string _tokenStoragePath;
+	private readonly ConcurrentDictionary<string, PendingSpotifyAuthorization> _pending = new();
+	private readonly IDataProtector _pendingProtector;
 	private readonly string _pendingStoragePath;
 	private readonly object _persistenceLock = new();
+	private readonly ConcurrentDictionary<string, SemaphoreSlim> _refreshLocks = new();
+	private readonly IDataProtector _tokenProtector;
+	private readonly string _tokenStoragePath;
+	private readonly ConcurrentDictionary<string, SpotifyTokenSession> _tokens = new();
 
 	public SpotifySessionStore(
 		IDataProtectionProvider dataProtectionProvider,
@@ -38,8 +38,10 @@ public sealed class SpotifySessionStore
 		LoadPending();
 	}
 
-	public SpotifyTokenSession? GetToken(string sessionId) =>
-		_tokens.GetValueOrDefault(sessionId);
+	public SpotifyTokenSession? GetToken(string sessionId)
+	{
+		return _tokens.GetValueOrDefault(sessionId);
+	}
 
 	public void SetToken(string sessionId, SpotifyTokenSession token)
 	{
@@ -72,8 +74,10 @@ public sealed class SpotifySessionStore
 		return pending;
 	}
 
-	public SemaphoreSlim GetRefreshLock(string sessionId) =>
-		_refreshLocks.GetOrAdd(sessionId, _ => new SemaphoreSlim(1, 1));
+	public SemaphoreSlim GetRefreshLock(string sessionId)
+	{
+		return _refreshLocks.GetOrAdd(sessionId, _ => new SemaphoreSlim(1, 1));
+	}
 
 	private void PrunePending()
 	{
@@ -92,7 +96,6 @@ public sealed class SpotifySessionStore
 				File.ReadAllText(_tokenStoragePath)) ?? [];
 
 			foreach (var (sessionId, protectedToken) in protectedSessions)
-			{
 				try
 				{
 					var token = JsonSerializer.Deserialize<SpotifyTokenSession>(_tokenProtector.Unprotect(protectedToken));
@@ -103,7 +106,6 @@ public sealed class SpotifySessionStore
 				{
 					_logger.LogWarning(exception, "A saved Spotify session could not be restored and was ignored.");
 				}
-			}
 		}
 		catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
 		{
@@ -122,7 +124,6 @@ public sealed class SpotifySessionStore
 				File.ReadAllText(_pendingStoragePath)) ?? [];
 
 			foreach (var (state, protectedAuthorization) in protectedAuthorizations)
-			{
 				try
 				{
 					var authorization = JsonSerializer.Deserialize<PendingSpotifyAuthorization>(
@@ -134,7 +135,6 @@ public sealed class SpotifySessionStore
 				{
 					_logger.LogWarning(exception, "A pending Spotify authorization could not be restored and was ignored.");
 				}
-			}
 		}
 		catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
 		{
@@ -176,10 +176,7 @@ public sealed class SpotifySessionStore
 			try
 			{
 				File.WriteAllText(temporaryPath, JsonSerializer.Serialize(protectedValues));
-				if (!OperatingSystem.IsWindows())
-				{
-					File.SetUnixFileMode(temporaryPath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
-				}
+				if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(temporaryPath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
 
 				File.Move(temporaryPath, storagePath, true);
 			}

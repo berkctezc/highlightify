@@ -29,14 +29,14 @@ public sealed class InstagramHighlightFetcher
 		{
 			var location = response.Headers.Location?.ToString();
 			throw new InvalidOperationException(
-				$"Instagram redirected the highlight request with {((int) response.StatusCode)} {response.ReasonPhrase}."
+				$"Instagram redirected the highlight request with {(int) response.StatusCode} {response.ReasonPhrase}."
 				+ (string.IsNullOrWhiteSpace(location) ? string.Empty : $" Location: {location}.")
 				+ " This usually means the session cookies are expired, incomplete, or the account requires a fresh login for this profile.");
 		}
 
 		if (!response.IsSuccessStatusCode)
 			throw new InvalidOperationException(
-				$"Instagram returned {((int) response.StatusCode)} {response.ReasonPhrase} for the highlight request.");
+				$"Instagram returned {(int) response.StatusCode} {response.ReasonPhrase} for the highlight request.");
 
 		var html = await response.Content.ReadAsStringAsync(cancellationToken);
 		return ExtractCandidates(html, highlightUrl);
@@ -82,10 +82,8 @@ public sealed class InstagramHighlightFetcher
 		// The fallback regex can accidentally pair fields from adjacent JSON objects.
 		// Only use it when the structured script scan found no candidates at all.
 		if (results.Count == 0)
-		{
 			foreach (Match match in PairFallbackRegex.Matches(html))
 				AddCandidate(results, seen, match.Groups["title"].Value, match.Groups["artist"].Value, null, sourceLabel, null, null);
-		}
 
 		return results;
 	}
@@ -131,11 +129,9 @@ public sealed class InstagramHighlightFetcher
 			if (process.ExitCode != 0)
 			{
 				if (RequiresFreshInstagramSession(stderr))
-				{
 					throw new InvalidOperationException(
 						"Instagram oturumu doğrulanamadı. Story'yi görüntülediğiniz tarayıcıyı seçin, "
 						+ "o tarayıcıda Instagram'a giriş yaptığınızdan emin olun ve yeniden deneyin.");
-				}
 
 				throw new InvalidOperationException(
 					"Instagram içeriği tarayıcı oturumuyla alınamadı. Story silinmiş veya süresi dolmuş olabilir.");
@@ -152,12 +148,14 @@ public sealed class InstagramHighlightFetcher
 		}
 	}
 
-	private static bool RequiresFreshInstagramSession(string error) =>
-		error.Contains("authentication", StringComparison.OrdinalIgnoreCase) ||
-		error.Contains("cookies-from-browser", StringComparison.OrdinalIgnoreCase) ||
-		error.Contains("cookies for", StringComparison.OrdinalIgnoreCase) ||
-		error.Contains("cookie database", StringComparison.OrdinalIgnoreCase) ||
-		error.Contains("failed to decrypt", StringComparison.OrdinalIgnoreCase);
+	private static bool RequiresFreshInstagramSession(string error)
+	{
+		return error.Contains("authentication", StringComparison.OrdinalIgnoreCase) ||
+		       error.Contains("cookies-from-browser", StringComparison.OrdinalIgnoreCase) ||
+		       error.Contains("cookies for", StringComparison.OrdinalIgnoreCase) ||
+		       error.Contains("cookie database", StringComparison.OrdinalIgnoreCase) ||
+		       error.Contains("failed to decrypt", StringComparison.OrdinalIgnoreCase);
+	}
 
 	private static IReadOnlyList<string> ReadWrittenPayloads(string root)
 	{
@@ -203,7 +201,7 @@ public sealed class InstagramHighlightFetcher
 		try
 		{
 			if (Directory.Exists(path))
-				Directory.Delete(path, recursive: true);
+				Directory.Delete(path, true);
 		}
 		catch
 		{
@@ -236,10 +234,7 @@ public sealed class InstagramHighlightFetcher
 		if (jsonStart < 0) return fragments;
 		{
 			var fragment = ExtractBalancedFragment(script, jsonStart, '[', ']');
-			if (fragment is not null)
-			{
-				fragments.Add(fragment);
-			}
+			if (fragment is not null) fragments.Add(fragment);
 		}
 
 		return fragments;
@@ -282,14 +277,13 @@ public sealed class InstagramHighlightFetcher
 			}
 
 			if (ch == open)
+			{
 				depth++;
+			}
 			else if (ch == close)
 			{
 				depth--;
-				if (depth == 0)
-				{
-					return text[startIndex..(i + 1)];
-				}
+				if (depth == 0) return text[startIndex..(i + 1)];
 			}
 		}
 
@@ -315,9 +309,9 @@ public sealed class InstagramHighlightFetcher
 		{
 			case JsonValueKind.Object:
 				var properties = element.EnumerateObject().ToList();
-				string? title = FindFirst(properties, "title", "name", "song_name", "track_name");
-				string? artist = FindFirst(properties, "artist_name", "display_artist", "display_artist_name", "artist");
-				string? album = FindFirst(properties, "album_name", "album", "collection_name", "release_name");
+				var title = FindFirst(properties, "title", "name", "song_name", "track_name");
+				var artist = FindFirst(properties, "artist_name", "display_artist", "display_artist_name", "artist");
+				var album = FindFirst(properties, "album_name", "album", "collection_name", "release_name");
 				var durationMs = FindFirstInt(properties, "duration_in_ms", "duration_ms");
 				var artworkUrl = FindFirst(properties, "cover_artwork_uri", "cover_artwork_thumbnail_uri");
 				var isMusicLike = properties.Any(p => p.Name.Contains("music", StringComparison.OrdinalIgnoreCase) ||

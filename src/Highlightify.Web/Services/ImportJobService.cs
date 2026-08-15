@@ -7,6 +7,11 @@ public sealed partial class ImportJobService(
 	IHostEnvironment environment,
 	ILogger<ImportJobService> logger)
 {
+	private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+	{
+		WriteIndented = true
+	};
+
 	private readonly ConcurrentDictionary<Guid, ImportJobState> _jobs = new();
 	private readonly object _persistenceLock = new();
 	private readonly string _storagePath = Path.Combine(environment.ContentRootPath, "App_Data", "imports.json");
@@ -32,7 +37,7 @@ public sealed partial class ImportJobService(
 
 		_jobs[job.Id] = job;
 		PersistHistory();
-		_ = Task.Run(() => ProcessAsync(job, matchOnly: false));
+		_ = Task.Run(() => ProcessAsync(job, false));
 		return job.Id;
 	}
 
@@ -73,7 +78,7 @@ public sealed partial class ImportJobService(
 		}
 
 		PersistHistory();
-		_ = Task.Run(() => ProcessAsync(job, matchOnly: true));
+		_ = Task.Run(() => ProcessAsync(job, true));
 	}
 
 	public async Task<ImportJobResponse> ExportAsync(
@@ -252,7 +257,9 @@ public sealed partial class ImportJobService(
 				alternatives));
 
 			lock (job.SyncRoot)
+			{
 				job.Tracks = tracks.Concat(job.Candidates.Skip(index + 1).Select(ToUnmatchedTrack)).ToList();
+			}
 
 			var progress = 45 + (int) Math.Round((index + 1d) / job.Candidates.Count * 45);
 			Update(job, ImportStatus.Matching, progress, $"{index + 1}/{job.Candidates.Count} şarkı eşleştirildi");
@@ -262,12 +269,16 @@ public sealed partial class ImportJobService(
 		Update(job, ImportStatus.Ready, 90, $"{matchedCount}/{tracks.Count} şarkı Spotify'da eşleşti");
 	}
 
-	private static ImportTrackResponse ToUnmatchedTrack(TrackCandidate candidate) =>
-		new(CreateTrackId(candidate), candidate.Title, candidate.Artist, candidate.Album, candidate.Source, null, []);
+	private static ImportTrackResponse ToUnmatchedTrack(TrackCandidate candidate)
+	{
+		return new ImportTrackResponse(CreateTrackId(candidate), candidate.Title, candidate.Artist, candidate.Album, candidate.Source, null, []);
+	}
 
-	private static string CreateTrackId(TrackCandidate candidate) =>
-		Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
-			System.Text.Encoding.UTF8.GetBytes(candidate.NormalizedKey)))[..16].ToLowerInvariant();
+	private static string CreateTrackId(TrackCandidate candidate)
+	{
+		return Convert.ToHexString(SHA256.HashData(
+			Encoding.UTF8.GetBytes(candidate.NormalizedKey)))[..16].ToLowerInvariant();
+	}
 
 	private static ImportJobResponse ToResponse(ImportJobState job)
 	{
@@ -374,7 +385,7 @@ public sealed partial class ImportJobService(
 				Directory.CreateDirectory(Path.GetDirectoryName(_storagePath)!);
 				var temporaryPath = $"{_storagePath}.{Guid.NewGuid():N}.tmp";
 				File.WriteAllText(temporaryPath, JsonSerializer.Serialize(snapshot, JsonOptions));
-				File.Move(temporaryPath, _storagePath, overwrite: true);
+				File.Move(temporaryPath, _storagePath, true);
 			}
 		}
 		catch (Exception exception)
@@ -434,13 +445,16 @@ public sealed partial class ImportJobService(
 		return trimmed;
 	}
 
-	private static string FriendlyMessage(Exception exception) => exception switch
+	private static string FriendlyMessage(Exception exception)
 	{
-		UnauthorizedAccessException => exception.Message,
-		ArgumentException => exception.Message,
-		HttpRequestException => "Instagram veya Spotify servisine ulaşılamadı. Ağ bağlantısını kontrol edip yeniden deneyin.",
-		_ => exception.Message.Length <= 500 ? exception.Message : "Beklenmeyen bir hata oluştu."
-	};
+		return exception switch
+		{
+			UnauthorizedAccessException => exception.Message,
+			ArgumentException => exception.Message,
+			HttpRequestException => "Instagram veya Spotify servisine ulaşılamadı. Ağ bağlantısını kontrol edip yeniden deneyin.",
+			_ => exception.Message.Length <= 500 ? exception.Message : "Beklenmeyen bir hata oluştu."
+		};
+	}
 
 	[GeneratedRegex("^[0-9]{5,40}$", RegexOptions.CultureInvariant)]
 	private static partial Regex HighlightIdRegex();
@@ -484,9 +498,4 @@ public sealed partial class ImportJobService(
 		string? Error,
 		string? PlaylistId,
 		string? PlaylistUrl);
-
-	private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
-	{
-		WriteIndented = true
-	};
 }

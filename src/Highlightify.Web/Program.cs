@@ -50,7 +50,7 @@ var app = builder.Build();
 
 app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
 {
-	var exception = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+	var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
 	var (status, message) = exception switch
 	{
 		UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, exception.Message),

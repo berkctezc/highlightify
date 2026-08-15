@@ -13,8 +13,10 @@ public sealed record TrackCandidate(
 	public string DisplayTitle =>
 		string.Join(" - ", new[] {Title, Artist, Album}.Where(value => !string.IsNullOrWhiteSpace(value)));
 
-	private static string Normalize(string? value) =>
-		string.IsNullOrWhiteSpace(value)
+	private static string Normalize(string? value)
+	{
+		return string.IsNullOrWhiteSpace(value)
 			? string.Empty
 			: value.Trim().ToLowerInvariant();
+	}
 }

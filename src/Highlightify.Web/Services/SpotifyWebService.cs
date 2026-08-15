@@ -106,7 +106,10 @@ public sealed class SpotifyWebService(
 		}
 	}
 
-	public void Disconnect(string sessionId) => sessionStore.RemoveToken(sessionId);
+	public void Disconnect(string sessionId)
+	{
+		sessionStore.RemoveToken(sessionId);
+	}
 
 	public async Task<IReadOnlyList<SpotifyPlaylistResponse>> GetPlaylistsAsync(
 		string sessionId,
@@ -237,7 +240,7 @@ public sealed class SpotifyWebService(
 			request.Content = JsonContent.Create(body);
 
 		var response = await httpClientFactory.CreateClient("spotify").SendAsync(request, cancellationToken);
-		if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+		if (response.StatusCode == HttpStatusCode.Unauthorized)
 		{
 			response.Dispose();
 			sessionStore.RemoveToken(sessionId);
@@ -336,11 +339,9 @@ public sealed class SpotifyWebService(
 
 		var artists = new List<string>();
 		if (item.TryGetProperty("artists", out var artistItems) && artistItems.ValueKind == JsonValueKind.Array)
-		{
 			artists.AddRange(artistItems.EnumerateArray()
 				.Select(artist => ReadString(artist, "name"))
 				.Where(artist => !string.IsNullOrWhiteSpace(artist))!);
-		}
 
 		var album = item.TryGetProperty("album", out var albumItem) ? ReadString(albumItem, "name") ?? "" : "";
 		var imageUrl = item.TryGetProperty("album", out albumItem) ? ReadFirstImage(albumItem) : null;
@@ -426,34 +427,53 @@ public sealed class SpotifyWebService(
 			throw new InvalidOperationException("SPOTIFY_CLIENT_ID yapılandırılmadı.");
 	}
 
-	private static string NormalizeReturnPath(string returnPath) =>
-		string.IsNullOrWhiteSpace(returnPath) || !returnPath.StartsWith('/') || returnPath.StartsWith("//")
+	private static string NormalizeReturnPath(string returnPath)
+	{
+		return string.IsNullOrWhiteSpace(returnPath) || !returnPath.StartsWith('/') || returnPath.StartsWith("//")
 			? "/"
 			: returnPath;
+	}
 
-	private static string Normalize(string? value) => value?.Trim().ToLowerInvariant() ?? string.Empty;
+	private static string Normalize(string? value)
+	{
+		return value?.Trim().ToLowerInvariant() ?? string.Empty;
+	}
 
-	private static bool ContainsEither(string left, string right) =>
-		!string.IsNullOrWhiteSpace(left) && !string.IsNullOrWhiteSpace(right) &&
-		(left.Contains(right, StringComparison.OrdinalIgnoreCase) || right.Contains(left, StringComparison.OrdinalIgnoreCase));
+	private static bool ContainsEither(string left, string right)
+	{
+		return !string.IsNullOrWhiteSpace(left) && !string.IsNullOrWhiteSpace(right) &&
+		       (left.Contains(right, StringComparison.OrdinalIgnoreCase) || right.Contains(left, StringComparison.OrdinalIgnoreCase));
+	}
 
-	private static string Base64UrlEncode(byte[] bytes) =>
-		Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+	private static string Base64UrlEncode(byte[] bytes)
+	{
+		return Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+	}
 
-	private static string? ReadString(JsonElement element, string property) =>
-		element.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
+	private static string? ReadString(JsonElement element, string property)
+	{
+		return element.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
+	}
 
-	private static int ReadInt(JsonElement element, string property, int fallback) =>
-		element.TryGetProperty(property, out var value) && value.TryGetInt32(out var parsed) ? parsed : fallback;
+	private static int ReadInt(JsonElement element, string property, int fallback)
+	{
+		return element.TryGetProperty(property, out var value) && value.TryGetInt32(out var parsed) ? parsed : fallback;
+	}
 
-	private static bool ReadBool(JsonElement element, string property) =>
-		element.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.True;
+	private static bool ReadBool(JsonElement element, string property)
+	{
+		return element.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.True;
+	}
 
-	private static string? ReadNestedString(JsonElement element, string parent, string property) =>
-		element.TryGetProperty(parent, out var nested) ? ReadString(nested, property) : null;
+	private static string? ReadNestedString(JsonElement element, string parent, string property)
+	{
+		return element.TryGetProperty(parent, out var nested) ? ReadString(nested, property) : null;
+	}
 
-	private static int ReadNestedInt(JsonElement element, string parent, string property) =>
-		element.TryGetProperty(parent, out var nested) ? ReadInt(nested, property, 0) : 0;
+	private static int ReadNestedInt(JsonElement element, string parent, string property)
+	{
+		return element.TryGetProperty(parent, out var nested) ? ReadInt(nested, property, 0) : 0;
+	}
 
 	private static string? ReadFirstImage(JsonElement element)
 	{
