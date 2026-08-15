@@ -1,4 +1,7 @@
+using Scalar.AspNetCore;
+
 var builder = WebApplication.CreateBuilder(args);
+var services = builder.Services;
 
 var spotifySettings = new SpotifySettings(
 	builder.Configuration["SPOTIFY_CLIENT_ID"] ?? builder.Configuration["Spotify:ClientId"],
@@ -11,42 +14,51 @@ var appDataPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data");
 var dataProtectionKeysPath = Path.Combine(appDataPath, "keys");
 Directory.CreateDirectory(dataProtectionKeysPath);
 
-builder.Services.ConfigureHttpJsonOptions(options =>
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+services.ConfigureHttpJsonOptions(options =>
 {
 	options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 	options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
 });
-builder.Services.Configure<FormOptions>(options =>
+services.Configure<FormOptions>(options =>
 {
 	options.MultipartBodyLengthLimit = 12_500_000;
 	options.ValueLengthLimit = 6_000_000;
 });
-builder.Services.AddSingleton(spotifySettings);
-builder.Services.AddDataProtection()
+services.AddSingleton(spotifySettings);
+services.AddDataProtection()
 	.PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath))
 	.SetApplicationName("Highlightify.Web");
-builder.Services.AddSingleton<SpotifySessionStore>();
-builder.Services.AddSingleton<ArtworkSimilarityService>();
-builder.Services.AddSingleton<SpotifyWebService>();
-builder.Services.AddSingleton<ImportJobService>();
-builder.Services.AddHttpClient("spotify", client =>
+services.AddSingleton<SpotifySessionStore>();
+services.AddSingleton<ArtworkSimilarityService>();
+services.AddSingleton<SpotifyWebService>();
+services.AddSingleton<ImportJobService>();
+services.AddHttpClient("spotify", client =>
 {
 	client.BaseAddress = new Uri("https://api.spotify.com/v1/");
 	client.Timeout = TimeSpan.FromSeconds(45);
 });
-builder.Services.AddHttpClient("instagram", client => client.Timeout = TimeSpan.FromMinutes(2));
-builder.Services.AddHttpClient("artwork", client =>
+services.AddHttpClient("instagram", client => client.Timeout = TimeSpan.FromMinutes(2));
+services.AddHttpClient("artwork", client =>
 {
 	client.Timeout = TimeSpan.FromSeconds(15);
 	client.DefaultRequestHeaders.UserAgent.ParseAdd("Highlightify/1.0 artwork-matcher");
 });
-builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
+services.AddCors(options => options.AddDefaultPolicy(policy => policy
 	.WithOrigins(spotifySettings.FrontendUrl.TrimEnd('/'))
 	.AllowAnyHeader()
 	.AllowAnyMethod()
 	.AllowCredentials()));
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+	app.MapSwagger("/openapi/{documentName}.json");
+	app.MapScalarApiReference();
+}
 
 app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
 {
@@ -70,8 +82,31 @@ app.Use(async (context, next) =>
 	context.Response.Headers.XContentTypeOptions = "nosniff";
 	context.Response.Headers.XFrameOptions = "DENY";
 	context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
-	context.Response.Headers.ContentSecurityPolicy =
-		"default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://accounts.spotify.com";
+	if (app.Environment.IsDevelopment())
+	{
+		context.Response.Headers.ContentSecurityPolicy =
+			"default-src 'self'; " +
+			"img-src 'self' https: data:; " +
+			"style-src 'self' 'unsafe-inline'; " +
+			"script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+			"connect-src 'self'; " +
+			"frame-ancestors 'none'; " +
+			"base-uri 'self'; " +
+			"form-action 'self' https://accounts.spotify.com";
+	}
+	else
+	{
+		context.Response.Headers.ContentSecurityPolicy =
+			"default-src 'self'; " +
+			"img-src 'self' https: data:; " +
+			"style-src 'self' 'unsafe-inline'; " +
+			"script-src 'self'; " +
+			"connect-src 'self'; " +
+			"frame-ancestors 'none'; " +
+			"base-uri 'self'; " +
+			"form-action 'self' https://accounts.spotify.com";
+	}
+
 	context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
 	await next();
 });
