@@ -6,7 +6,7 @@ var services = builder.Services;
 var spotifySettings = new SpotifySettings(
 	builder.Configuration["SPOTIFY_CLIENT_ID"] ?? builder.Configuration["Spotify:ClientId"],
 	builder.Configuration["SPOTIFY_REDIRECT_URI"] ?? builder.Configuration["Spotify:RedirectUri"]
-	?? "http://127.0.0.1:5086/api/auth/spotify/callback",
+	?? "http://127.0.0.1:5087/api/auth/spotify/callback",
 	builder.Configuration["HIGHLIGHTIFY_FRONTEND_URL"] ?? builder.Configuration["App:FrontendUrl"]
 	?? "http://127.0.0.1:5173");
 

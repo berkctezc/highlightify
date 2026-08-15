@@ -79,7 +79,7 @@ export function SettingsPage() {
       {!config.data?.spotifyConfigured && (
         <div className="mt-5 flex items-start gap-3 rounded-xl border border-amber-300/15 bg-amber-300/[0.04] p-4">
           <KeyIcon className="mt-0.5 size-4 shrink-0 text-amber-300" weight="duotone" />
-          <div><p className="text-xs font-extrabold text-amber-200">Spotify Client ID is required</p><p className="mt-1 text-[11px] leading-5 text-muted-foreground">Set <code>SPOTIFY_CLIENT_ID</code> and add <code>http://127.0.0.1:5086/api/auth/spotify/callback</code> as the callback URL.</p><a href="https://developer.spotify.com/dashboard" target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-amber-300 hover:underline">Spotify Dashboard <ArrowSquareOutIcon className="size-3" weight="bold" /></a></div>
+          <div><p className="text-xs font-extrabold text-amber-200">Spotify Client ID is required</p><p className="mt-1 text-[11px] leading-5 text-muted-foreground">Set <code>SPOTIFY_CLIENT_ID</code> and add <code>http://127.0.0.1:5087/api/auth/spotify/callback</code> as the callback URL.</p><a href="https://developer.spotify.com/dashboard" target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-amber-300 hover:underline">Spotify Dashboard <ArrowSquareOutIcon className="size-3" weight="bold" /></a></div>
         </div>
       )}
     </div>

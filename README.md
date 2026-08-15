@@ -23,7 +23,7 @@ The ASP.NET Core backend reuses the existing Instagram extraction logic, manages
 Add this redirect URI to the Spotify developer application:
 
 ```text
-http://127.0.0.1:5086/api/auth/spotify/callback
+http://127.0.0.1:5087/api/auth/spotify/callback
 ```
 
 Configure the Spotify client ID with .NET user secrets:
@@ -38,7 +38,7 @@ Environment variables are also supported:
 
 ```bash
 export SPOTIFY_CLIENT_ID="YOUR_SPOTIFY_CLIENT_ID"
-export SPOTIFY_REDIRECT_URI="http://127.0.0.1:5086/api/auth/spotify/callback"
+export SPOTIFY_REDIRECT_URI="http://127.0.0.1:5087/api/auth/spotify/callback"
 export HIGHLIGHTIFY_FRONTEND_URL="http://127.0.0.1:5173"
 ```
 
@@ -63,7 +63,7 @@ cd ..
 dotnet run --project src/Highlightify.Web/Highlightify.Web.csproj --no-build
 ```
 
-Open [http://127.0.0.1:5086](http://127.0.0.1:5086).
+Open [http://127.0.0.1:5087](http://127.0.0.1:5087).
 
 ### Web flow
 
