@@ -166,7 +166,7 @@ api.MapGet("/imports", (HttpContext context, ImportJobService jobs) =>
 api.MapGet("/imports/{id:guid}", (HttpContext context, Guid id, ImportJobService jobs) =>
 	jobs.Get(SessionIdentity.GetOrCreate(context), id) is { } job
 		? Results.Ok(job)
-		: Results.NotFound(new ApiErrorResponse("Aktarım bulunamadı.")));
+		: Results.NotFound(new ApiErrorResponse("Transfer could not be found.")));
 
 api.MapPost("/imports", async (
 	HttpContext context,
@@ -174,7 +174,7 @@ api.MapPost("/imports", async (
 	CancellationToken cancellationToken) =>
 {
 	if (!context.Request.HasFormContentType)
-		return Results.BadRequest(new ApiErrorResponse("Aktarım multipart/form-data olarak gönderilmeli."));
+		return Results.BadRequest(new ApiErrorResponse("Transfer should be sent as Aktarım multipart/form-data."));
 
 	var form = await context.Request.ReadFormAsync(cancellationToken);
 	var sources = new List<ImportSourceInput>();
@@ -192,10 +192,10 @@ api.MapPost("/imports", async (
 		if (file.Length == 0)
 			continue;
 		if (file.Length > 6_000_000 || totalFileSize > 12_000_000)
-			return Results.BadRequest(new ApiErrorResponse("HTML dosyaları toplam 12 MB, dosya başına 6 MB sınırını aşamaz."));
+			return Results.BadRequest(new ApiErrorResponse("HTML files could not exceed 6MB and be 12 files maximum."));
 		if (!Path.GetExtension(file.FileName).Equals(".html", StringComparison.OrdinalIgnoreCase) &&
 		    !Path.GetExtension(file.FileName).Equals(".htm", StringComparison.OrdinalIgnoreCase))
-			return Results.BadRequest(new ApiErrorResponse("Yalnızca .html veya .htm dosyaları yüklenebilir."));
+			return Results.BadRequest(new ApiErrorResponse("Only .html and .htm formats are supported."));
 
 		using var reader = new StreamReader(file.OpenReadStream());
 		var html = await reader.ReadToEndAsync(cancellationToken);
@@ -224,7 +224,7 @@ api.MapPost("/imports/{id:guid}/export", async (
 		SessionIdentity.GetOrCreate(context), id, request, cancellationToken)));
 
 api.MapMethods("/{**path}", ["GET", "POST", "PUT", "PATCH", "DELETE"], () =>
-	Results.NotFound(new ApiErrorResponse("API adresi bulunamadı.")));
+	Results.NotFound(new ApiErrorResponse("API adress could not be found.")));
 
 app.MapFallback(async context =>
 {
@@ -237,7 +237,7 @@ app.MapFallback(async context =>
 	}
 
 	context.Response.StatusCode = StatusCodes.Status404NotFound;
-	await context.Response.WriteAsync("Highlightify frontend build bulunamadı. web dizininde 'pnpm build' çalıştırın.");
+	await context.Response.WriteAsync("Highlightify frontend build could not be found. run 'pnpm build' on web directory.");
 });
 
 app.Run();
