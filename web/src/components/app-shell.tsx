@@ -26,10 +26,10 @@ const navigation = [
 ]
 
 const routeMeta = {
-  home: { title: "Yeni aktarım", description: "Instagram müziklerini Spotify'a taşı" },
-  history: { title: "Geçmiş", description: "Aktarımların ve sonuçların" },
-  settings: { title: "Ayarlar", description: "Bağlantılar ve yerel servisler" },
-  import: { title: "Aktarım detayı", description: "Eşleşmeleri kontrol et" },
+  home: { title: "New transfer", description: "Instagram müziklerini Spotify'a taşı" },
+  history: { title: "History", description: "Aktarımların ve sonuçların" },
+  settings: { title: "Configuration", description: "Bağlantılar ve yerel servisler" },
+  import: { title: "Transfer info", description: "Eşleşmeleri kontrol et" },
 }
 
 export function AppShell({ children }: { children: ReactNode }) {

@@ -143,6 +143,11 @@ Other:
 
 Instagram payload formats change frequently, so extraction is intentionally best-effort and covered by regression fixtures.
 
+#### TODO
+- localization
+- translation to english
+
+
 #### CONTRIBUTORS / MAINTAINERS
 [@berkctezc](https://github.com/berkctezc)
 [@sametirkoren](https://github.com/sametirkoren)

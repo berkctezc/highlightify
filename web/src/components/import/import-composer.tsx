@@ -35,9 +35,9 @@ import { cn } from "@/lib/utils"
 gsap.registerPlugin(useGSAP)
 
 const workflow = [
-  { icon: LinkIcon, title: "Kaynağı ekle", copy: "Story veya Highlight bağlantısı" },
-  { icon: WaveformIcon, title: "Sonucu doğrula", copy: "Doğru şarkı ve sürümü seç" },
-  { icon: PlaylistIcon, title: "Playlist'e gönder", copy: "Yeni ya da mevcut liste" },
+  { icon: LinkIcon, title: "Add source", copy: "Story or Highlight link" },
+  { icon: WaveformIcon, title: "Verify source", copy: "Select correct track and version" },
+  { icon: PlaylistIcon, title: "Send to Playlist", copy: "New or existing playlist" },
 ]
 
 export function ImportComposer() {
@@ -76,7 +76,7 @@ export function ImportComposer() {
 
   function addFiles(nextFiles: File[]) {
     const htmlFiles = nextFiles.filter((file) => /\.html?$/i.test(file.name) && file.size <= 6_000_000)
-    if (htmlFiles.length !== nextFiles.length) toast.error("Yalnızca 6 MB'dan küçük HTML dosyaları eklenebilir.")
+    if (htmlFiles.length !== nextFiles.length) toast.error("Only HTML files smaller than 6MB allowed.")
     setFiles((current) => [...current, ...htmlFiles]
       .filter((file, index, all) => all.findIndex((candidate) => candidate.name === file.name && candidate.size === file.size) === index)
       .slice(0, 12))
@@ -93,27 +93,27 @@ export function ImportComposer() {
       const clipboard = await navigator.clipboard.readText()
       const nextSources = clipboard.split(/\r?\n/).map((item) => item.trim()).filter(Boolean)
       if (!nextSources.length) {
-        toast.info("Panoda eklenebilecek bir bağlantı yok.")
+        toast.info("No compatible link on clipboard.")
         return
       }
       setSourceText((current) => Array.from(new Set([
         ...current.split(/\r?\n/).map((item) => item.trim()).filter(Boolean),
         ...nextSources,
       ])).join("\n"))
-      toast.success(nextSources.length === 1 ? "Bağlantı eklendi." : `${nextSources.length} bağlantı eklendi.`)
+      toast.success(nextSources.length === 1 ? "Connection added." : `${nextSources.length} connection added.`)
     } catch {
-      toast.error("Panoya erişilemedi. Bağlantıyı alana yapıştırabilirsin.")
+      toast.error("Cannot access clipboard. Paste link into the field.")
     }
   }
 
   function submit(event: FormEvent) {
     event.preventDefault()
     if (sourceCount === 0) {
-      toast.error("En az bir Story veya Highlight bağlantısı ekle.")
+      toast.error("Add at least one Story or Highlight link.")
       return
     }
     if (sourceCount > 12) {
-      toast.error("Tek aktarımda en fazla 12 kaynak ekleyebilirsin.")
+      toast.error("Only 12 sources could be added at once.")
       return
     }
     startImport.mutate({ sources, files, browserSource: browserSource || config.data?.defaultBrowserSource || "none" })
@@ -161,7 +161,7 @@ export function ImportComposer() {
               <Textarea
                 value={sourceText}
                 onChange={(event) => setSourceText(event.target.value)}
-                placeholder={"https://instagram.com/stories/kullanici/…\nhttps://instagram.com/stories/highlights/…"}
+                placeholder={"https://instagram.com/stories/user/…\nhttps://instagram.com/stories/highlights/…"}
                 rows={6}
                 className="min-h-44 resize-y rounded-none border-0 bg-transparent px-4 py-4 text-sm leading-7 shadow-none focus:bg-transparent focus:ring-0 sm:text-[15px]"
                 aria-label="Instagram Story ve Highlight bağlantıları"
@@ -179,7 +179,7 @@ export function ImportComposer() {
                   <span className="text-[10px] font-bold text-muted-foreground">Özel içerik için</span>
                 </div>
                 <Select value={browserSource || config.data?.defaultBrowserSource || "none"} onValueChange={changeBrowserSource}>
-                  <SelectTrigger aria-label="Instagram tarayıcı oturumu"><SelectValue placeholder="Tarayıcı seç" /></SelectTrigger>
+                  <SelectTrigger aria-label="Instagram browser session"><SelectValue placeholder="Select browser" /></SelectTrigger>
                   <SelectContent><SelectItem value="none">Giriş gerekmiyor</SelectItem><SelectItem value="firefox">Firefox</SelectItem><SelectItem value="brave">Brave</SelectItem><SelectItem value="chrome">Google Chrome</SelectItem><SelectItem value="chromium">Chromium</SelectItem><SelectItem value="edge">Microsoft Edge</SelectItem><SelectItem value="safari">Safari</SelectItem></SelectContent>
                 </Select>
                 <p className="mt-2.5 flex items-center gap-1.5 text-[10px] text-muted-foreground"><LockKeyIcon className="size-3.5" weight="duotone" /> Çerezlerin bu cihazdan ayrılmaz.</p>
@@ -221,7 +221,7 @@ export function ImportComposer() {
               {spotify.isPending ? (
                 <div className="flex items-center gap-3 rounded-xl border border-white/[0.07] bg-[#181818] p-4"><CircleNotchIcon className="size-4 animate-spin text-muted-foreground" weight="bold" /><div><p className="text-xs font-extrabold">Hesabın kontrol ediliyor</p><p className="mt-1 text-[10px] text-muted-foreground">Kayıtlı oturum geri yükleniyor</p></div></div>
               ) : spotify.isError ? (
-                <button type="button" onClick={() => spotify.refetch()} className="flex w-full items-center gap-3 rounded-xl border border-white/[0.07] bg-[#181818] p-4 text-left transition hover:bg-[#242424]"><ArrowClockwiseIcon className="size-4" weight="bold" /><div><p className="text-xs font-extrabold">Tekrar kontrol et</p><p className="mt-1 text-[10px] text-muted-foreground">Mevcut bağlantın silinmedi</p></div></button>
+                <button type="button" onClick={() => spotify.refetch()} className="flex w-full items-center gap-3 rounded-xl border border-white/[0.07] bg-[#181818] p-4 text-left transition hover:bg-[#242424]"><ArrowClockwiseIcon className="size-4" weight="bold" /><div><p className="text-xs font-extrabold">Tekrar kontrol et</p><p className="mt-1 text-[10px] text-muted-foreground">Could not remove existing connection.</p></div></button>
               ) : spotify.data?.connected && spotify.data.profile ? (
                 <div className="flex items-center gap-3 rounded-xl border border-[#1ed760]/15 bg-[#1ed760]/[0.055] p-4">
                   <Avatar className="size-10"><AvatarImage src={spotify.data.profile.imageUrl ?? undefined} alt="" /><AvatarFallback>{spotify.data.profile.displayName.slice(0, 2).toUpperCase()}</AvatarFallback></Avatar>
