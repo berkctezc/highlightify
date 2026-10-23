@@ -47,8 +47,42 @@ public sealed class InstagramHighlightFetcher
 		string cookiesFromBrowser,
 		CancellationToken cancellationToken = default)
 	{
-		var payloads = await FetchPayloadsViaYtDlpAsync(highlightUrl, cookiesFromBrowser, cancellationToken);
+		var payloads = await FetchPayloadsViaYtDlpAsync(
+			highlightUrl,
+			cancellationToken,
+			"browser session",
+			"--cookies-from-browser",
+			cookiesFromBrowser);
 		return ExtractCandidates(payloads, highlightUrl);
+	}
+
+	public async Task<IReadOnlyList<TrackCandidate>> FetchCandidatesViaYtDlpWithCookieHeaderAsync(
+		string highlightUrl,
+		string cookieHeader,
+		CancellationToken cancellationToken = default)
+	{
+		var cookieFile = Path.Combine(Path.GetTempPath(), $"highlightify-cookies-{Guid.NewGuid():N}.txt");
+		try
+		{
+			File.WriteAllText(cookieFile, ToNetscapeCookieFile(cookieHeader));
+			var payloads = await FetchPayloadsViaYtDlpAsync(
+				highlightUrl,
+				cancellationToken,
+				"pasted cookies",
+				"--cookies",
+				cookieFile);
+			return ExtractCandidates(payloads, highlightUrl);
+		}
+		finally
+		{
+			try
+			{
+				File.Delete(cookieFile);
+			}
+			catch
+			{
+			}
+		}
 	}
 
 	public IReadOnlyList<TrackCandidate> ExtractCandidates(IEnumerable<string> payloads, string sourceLabel)
@@ -92,8 +126,9 @@ public sealed class InstagramHighlightFetcher
 
 	private static async Task<IReadOnlyList<string>> FetchPayloadsViaYtDlpAsync(
 		string highlightUrl,
-		string cookiesFromBrowser,
-		CancellationToken cancellationToken)
+		CancellationToken cancellationToken,
+		string authenticationMethod,
+		params string[] authenticationArguments)
 	{
 		var ytDlp = FindExecutable("yt-dlp");
 		if (ytDlp is null)
@@ -117,8 +152,8 @@ public sealed class InstagramHighlightFetcher
 			startInfo.ArgumentList.Add("--no-warnings");
 			startInfo.ArgumentList.Add("--skip-download");
 			startInfo.ArgumentList.Add("--write-pages");
-			startInfo.ArgumentList.Add("--cookies-from-browser");
-			startInfo.ArgumentList.Add(cookiesFromBrowser);
+			foreach (var argument in authenticationArguments)
+				startInfo.ArgumentList.Add(argument);
 			startInfo.ArgumentList.Add(highlightUrl);
 
 			using var process = Process.Start(startInfo) ?? throw new InvalidOperationException("Unable to start yt-dlp.");
@@ -130,13 +165,19 @@ public sealed class InstagramHighlightFetcher
 
 			if (process.ExitCode != 0)
 			{
-				if (RequiresFreshInstagramSession(stderr))
-					throw new InvalidOperationException(
-						"Instagram session could not be validated. Select the browser where you viewed the story, "
-						+ "make sure you are signed in to Instagram in that browser, and try again.");
+				if (CannotAccessBrowserCookieDatabase(stderr))
+					throw new UnauthorizedAccessException(
+						"Instagram browser cookies could not be read because the browser profile is blocked by macOS privacy settings. "
+						+ "Grant Full Disk Access to the app or terminal running Highlightify, then try again; alternatively use a pasted cookies.txt export.");
 
-				throw new InvalidOperationException(
-					"Instagram content could not be fetched using the browser session. The story may have been deleted or expired.");
+				if (RequiresFreshInstagramSession(stderr))
+					throw new InvalidOperationException(authenticationMethod == "pasted cookies"
+						? "Pasted Instagram cookies could not be validated. Export a fresh cookies.txt file while signed in, "
+						  + "and make sure it includes the sessionid and csrftoken cookies."
+						: "Instagram session could not be validated. Select the browser where you viewed the story, "
+						  + "make sure you are signed in to Instagram in that browser, and try again.");
+
+				throw new InvalidOperationException($"Instagram content could not be fetched using {authenticationMethod}. The story may have been deleted or expired.");
 			}
 
 			var payloads = ReadWrittenPayloads(tempDir);
@@ -150,6 +191,23 @@ public sealed class InstagramHighlightFetcher
 		}
 	}
 
+	private static string ToNetscapeCookieFile(string cookieHeader)
+	{
+		var lines = new List<string> {"# Netscape HTTP Cookie File"};
+		foreach (var pair in cookieHeader.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+		{
+			var separator = pair.IndexOf('=');
+			if (separator <= 0)
+				continue;
+			var name = pair[..separator].Trim();
+			var value = pair[(separator + 1)..].Trim();
+			if (name.Length > 0 && !name.Contains('\t') && !value.Contains('\r') && !value.Contains('\n') && !value.Contains('\t'))
+				lines.Add($".instagram.com\tTRUE\t/\tTRUE\t2147483647\t{name}\t{value}");
+		}
+
+		return string.Join(Environment.NewLine, lines) + Environment.NewLine;
+	}
+
 	private static bool RequiresFreshInstagramSession(string error)
 	{
 		return error.Contains("authentication", StringComparison.OrdinalIgnoreCase) ||
@@ -158,6 +216,10 @@ public sealed class InstagramHighlightFetcher
 		       error.Contains("cookie database", StringComparison.OrdinalIgnoreCase) ||
 		       error.Contains("failed to decrypt", StringComparison.OrdinalIgnoreCase);
 	}
+
+	private static bool CannotAccessBrowserCookieDatabase(string error) =>
+		error.Contains("operation not permitted", StringComparison.OrdinalIgnoreCase) ||
+		error.Contains("permission denied", StringComparison.OrdinalIgnoreCase);
 
 	private static IReadOnlyList<string> ReadWrittenPayloads(string root)
 	{

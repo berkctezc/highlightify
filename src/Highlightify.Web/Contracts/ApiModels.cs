@@ -85,4 +85,5 @@ public sealed record ImportSourceInput(string Label, string? Url, string? Html);
 
 public sealed record StartImportInput(
 	IReadOnlyList<ImportSourceInput> Sources,
-	string? BrowserSource);
+	string? BrowserSource,
+	string? InstagramCookieHeader);

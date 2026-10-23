@@ -68,12 +68,15 @@ Open [http://127.0.0.1:5087](http://127.0.0.1:5087).
 ### Web flow
 
 1. Paste one or more Instagram Highlight URLs or upload saved HTML exports.
-2. Optionally select a local browser session for private Highlights.
+2. For private Highlights, optionally select a local browser session or paste a raw Instagram Cookie header for that
+   import.
 3. Review the Spotify match, confidence, and alternatives for every extracted song.
 4. Select an existing playlist or create a private/public playlist.
 5. Open the completed playlist directly in Spotify.
 
-Raw Instagram cookies are never accepted by the web API. When browser access is selected, `yt-dlp` reads the chosen profile locally. Import history is stored in `src/Highlightify.Web/App_Data` and is ignored by Git.
+Pasted Instagram Cookie headers are used only while their import is running; they are not saved in browser storage or
+import history. Web imports use `yt-dlp` to read a selected browser profile locally; the CLI reads selected Firefox
+profiles directly. Import history is stored in `src/Highlightify.Web/App_Data` and is ignored by Git.
 
 ## Architecture
 
@@ -113,6 +116,15 @@ dotnet run --project src/Highlightify.Console -- \
   --instagram-cookies-from-browser "firefox:/path/to/profile"
 ```
 
+On macOS, grant **Full Disk Access** to the terminal or IDE that launches Highlightify
+in **System Settings → Privacy & Security → Full Disk Access**, then restart it. Firefox
+stores `cookies.sqlite` in a protected location, and imports cannot authenticate without
+access to that file. A profile path beginning with `~` is accepted; for example:
+
+```bash
+--instagram-cookies-from-browser "firefox:$HOME/Library/Application Support/Firefox/Profiles/your-profile"
+```
+
 ```text
 Usage:
   highlightify --highlight <id> [--highlight <id> ...] --spotify-client-id <id> [options]
@@ -128,7 +140,7 @@ Highlight input:
   --instagram-cookie-file <f>  Cookie header or Netscape cookie file (CLI only)
   --instagram-cookie-path <f>  Firefox profile or cookies.sqlite path
   --instagram-cookies-from-browser <spec>
-                               Browser source such as firefox or firefox:/profile/path
+                               Firefox profile such as firefox:/profile/path (CLI)
 
 Spotify output:
   --playlist-name <name>       Playlist name; defaults to Instagram Highlights

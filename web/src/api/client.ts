@@ -1,10 +1,10 @@
 import type {
-  AppConfiguration,
-  ExportPlaylistInput,
-  ImportJob,
-  SpotifyConnection,
-  SpotifyPlaylist,
-  StartImportInput,
+    AppConfiguration,
+    ExportPlaylistInput,
+    ImportJob,
+    SpotifyConnection,
+    SpotifyPlaylist,
+    StartImportInput,
 } from "@/api/types"
 
 type ApiErrorPayload = { error?: string }
@@ -67,6 +67,7 @@ export const api = {
     input.sources.forEach((source) => form.append("sources", source))
     input.files.forEach((file) => form.append("files", file))
     form.append("browserSource", input.browserSource)
+      if (input.instagramCookie.trim()) form.append("instagramCookie", input.instagramCookie.trim())
     return request<{ id: string }>("/api/imports", { method: "POST", body: form })
   },
 

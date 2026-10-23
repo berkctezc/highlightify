@@ -1,36 +1,36 @@
-import { useGSAP } from "@gsap/react"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import {useGSAP} from "@gsap/react"
+import {useMutation, useQuery} from "@tanstack/react-query"
 import gsap from "gsap"
-import { useRef, useState, type DragEvent, type FormEvent } from "react"
-import { useNavigate } from "react-router-dom"
-import { toast } from "sonner"
+import {type DragEvent, type FormEvent, useRef, useState} from "react"
+import {useNavigate} from "react-router-dom"
+import {toast} from "sonner"
 
-import { api } from "@/api/client"
+import {api} from "@/api/client"
 import {
-  ArrowClockwiseIcon,
-  ArrowRightIcon,
-  CheckCircleIcon,
-  CircleNotchIcon,
-  CloudArrowUpIcon,
-  FileCodeIcon,
-  ImagesIcon,
-  LaptopIcon,
-  LinkIcon,
-  LockKeyIcon,
-  MagnifyingGlassIcon,
-  MusicNotesIcon,
-  PlaylistIcon,
-  SpotifyLogoIcon,
-  WaveformIcon,
-  XIcon,
+    ArrowClockwiseIcon,
+    ArrowRightIcon,
+    CheckCircleIcon,
+    CircleNotchIcon,
+    CloudArrowUpIcon,
+    FileCodeIcon,
+    ImagesIcon,
+    LaptopIcon,
+    LinkIcon,
+    LockKeyIcon,
+    MagnifyingGlassIcon,
+    MusicNotesIcon,
+    PlaylistIcon,
+    SpotifyLogoIcon,
+    WaveformIcon,
+    XIcon,
 } from "@/components/icons"
-import { SpotifyConnectButton } from "@/components/spotify-connect-button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { useSpotifyConnection } from "@/hooks/use-spotify"
-import { cn } from "@/lib/utils"
+import {SpotifyConnectButton} from "@/components/spotify-connect-button"
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
+import {Button} from "@/components/ui/button"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
+import {Textarea} from "@/components/ui/textarea"
+import {useSpotifyConnection} from "@/hooks/use-spotify"
+import {cn} from "@/lib/utils"
 
 gsap.registerPlugin(useGSAP)
 
@@ -47,6 +47,7 @@ export function ImportComposer() {
   const [sourceText, setSourceText] = useState("")
   const [files, setFiles] = useState<File[]>([])
   const [browserSource, setBrowserSource] = useState(() => window.localStorage.getItem("highlightify.browser-source") ?? "")
+    const [instagramCookie, setInstagramCookie] = useState("")
   const [dragging, setDragging] = useState(false)
   const config = useQuery({ queryKey: ["config"], queryFn: ({ signal }) => api.getConfiguration(signal) })
   const spotify = useSpotifyConnection()
@@ -62,6 +63,8 @@ export function ImportComposer() {
     .filter(Boolean)
   const sourceCount = sources.length + files.length
   const remaining = Math.max(0, 12 - sourceCount)
+    const selectedAuthentication = browserSource || config.data?.defaultBrowserSource || "none"
+    const usesManualCookie = selectedAuthentication === "manual"
 
   useGSAP(() => {
     const media = gsap.matchMedia()
@@ -116,12 +119,22 @@ export function ImportComposer() {
       toast.error("You can add up to 12 sources at once.")
       return
     }
-    startImport.mutate({ sources, files, browserSource: browserSource || config.data?.defaultBrowserSource || "none" })
+      if (usesManualCookie && !instagramCookie.trim()) {
+          toast.error("Paste an Instagram Cookie header or Netscape cookie export.")
+          return
+      }
+      startImport.mutate({
+          sources,
+          files,
+          browserSource: usesManualCookie ? "none" : selectedAuthentication,
+          instagramCookie: usesManualCookie ? instagramCookie : "",
+      })
   }
 
   function changeBrowserSource(value: string) {
     setBrowserSource(value)
     window.localStorage.setItem("highlightify.browser-source", value)
+      if (value !== "manual") setInstagramCookie("")
   }
 
   return (
@@ -178,12 +191,43 @@ export function ImportComposer() {
                   <span className="flex items-center gap-2 text-xs font-extrabold"><LaptopIcon className="size-4 text-muted-foreground" weight="duotone" /> Instagram session</span>
                   <span className="text-[10px] font-bold text-muted-foreground">For private content</span>
                 </div>
-                <Select value={browserSource || config.data?.defaultBrowserSource || "none"} onValueChange={changeBrowserSource}>
-                  <SelectTrigger aria-label="Instagram browser session"><SelectValue placeholder="Select browser" /></SelectTrigger>
-                  <SelectContent><SelectItem value="none">No login required</SelectItem><SelectItem value="firefox">Firefox</SelectItem><SelectItem value="brave">Brave</SelectItem><SelectItem value="chrome">Google Chrome</SelectItem><SelectItem value="chromium">Chromium</SelectItem><SelectItem value="edge">Microsoft Edge</SelectItem><SelectItem value="safari">Safari</SelectItem></SelectContent>
+                  <Select value={selectedAuthentication} onValueChange={changeBrowserSource}>
+                      <SelectTrigger aria-label="Instagram authentication method"><SelectValue
+                          placeholder="Select authentication method"/></SelectTrigger>
+                      <SelectContent><SelectItem value="none">No login required</SelectItem><SelectItem value="manual">Paste
+                          cookies</SelectItem><SelectItem value="firefox">Firefox</SelectItem><SelectItem
+                          value="brave">Brave</SelectItem><SelectItem value="chrome">Google
+                          Chrome</SelectItem><SelectItem value="chromium">Chromium</SelectItem><SelectItem value="edge">Microsoft
+                          Edge</SelectItem><SelectItem value="safari">Safari</SelectItem></SelectContent>
                 </Select>
-                <p className="mt-2.5 flex items-center gap-1.5 text-[10px] text-muted-foreground"><LockKeyIcon className="size-3.5" weight="duotone" /> Your cookies never leave this device.</p>
+                  <p className="mt-2.5 flex items-center gap-1.5 text-[10px] text-muted-foreground"><LockKeyIcon
+                      className="size-3.5" weight="duotone"/> Choose a browser session or paste cookies for this import.
+                  </p>
               </div>
+
+                {usesManualCookie &&
+                    <div className="rounded-xl border border-white/[0.07] bg-[#141414] p-4 md:col-span-2">
+                        <div className="flex items-center justify-between gap-3">
+                            <span className="flex items-center gap-2 text-xs font-extrabold"><LockKeyIcon
+                                className="size-4 text-muted-foreground"
+                                weight="duotone"/> Paste Instagram cookies</span>
+                            <span
+                                className="text-[10px] font-bold text-muted-foreground">Alternative to browser access</span>
+                        </div>
+                        <Textarea
+                            value={instagramCookie}
+                            onChange={(event) => setInstagramCookie(event.target.value)}
+                            placeholder={"sessionid=…; csrftoken=…; ds_user_id=…\n# Netscape HTTP Cookie File\n.instagram.com\tTRUE\t/\tTRUE\t0\tsessionid\t…"}
+                            rows={3}
+                            className="mt-3 min-h-20 resize-y border-white/[0.08] bg-[#0f0f0f] px-3 py-2 text-xs leading-5 shadow-none focus:ring-1 focus:ring-white/15"
+                            aria-label="Instagram Cookie header"
+                            autoComplete="off"
+                            spellCheck={false}
+                        />
+                        <p className="mt-2.5 text-[10px] leading-4 text-muted-foreground">Paste a Cookie request header
+                            or Netscape cookie export. It is used only for this import, is not saved in this browser,
+                            and is not included in import history.</p>
+                    </div>}
 
               <div
                 onDragOver={(event) => { event.preventDefault(); setDragging(true) }}

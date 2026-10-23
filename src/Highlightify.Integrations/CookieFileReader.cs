@@ -4,14 +4,21 @@ public static class CookieFileReader
 {
 	public static string ReadAsCookieHeader(string path)
 	{
-		var lines = File.ReadAllLines(path);
+		return ParseAsCookieHeader(File.ReadAllText(path));
+	}
+
+	public static string ParseAsCookieHeader(string content)
+	{
+		var lines = content.Split(["\r\n", "\n", "\r"], StringSplitOptions.None);
 		var pairs = new List<string>();
 
 		foreach (var rawLine in lines)
 		{
 			var line = rawLine.Trim();
-			if (line.Length == 0 || line.StartsWith('#'))
+			if (line.Length == 0 || (line.StartsWith('#') && !line.StartsWith("#HttpOnly_", StringComparison.OrdinalIgnoreCase)))
 				continue;
+			if (line.StartsWith("#HttpOnly_", StringComparison.OrdinalIgnoreCase))
+				line = line[1..];
 
 			if (line.Contains('\t'))
 			{
@@ -26,6 +33,9 @@ public static class CookieFileReader
 
 				continue;
 			}
+
+			if (line.StartsWith("Cookie:", StringComparison.OrdinalIgnoreCase))
+				line = line[7..].Trim();
 
 			if (line.Contains('='))
 				pairs.Add(line.TrimEnd(';'));

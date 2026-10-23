@@ -30,6 +30,7 @@ public sealed partial class ImportJobService(
 			UpdatedAt = now,
 			Sources = input.Sources.ToList(),
 			BrowserSource = NormalizeBrowserSource(input.BrowserSource),
+			InstagramCookieHeader = NormalizeCookieHeader(input.InstagramCookieHeader),
 			Status = ImportStatus.Queued,
 			Progress = 2,
 			StatusMessage = "Import queued"
@@ -176,7 +177,17 @@ public sealed partial class ImportJobService(
 		try
 		{
 			if (!matchOnly)
-				await ReadSourcesAsync(job);
+			{
+				try
+				{
+					await ReadSourcesAsync(job);
+				}
+				finally
+				{
+					// The header is needed only while Instagram sources are being read.
+					job.InstagramCookieHeader = null;
+				}
+			}
 
 			await MatchCandidatesAsync(job);
 		}
@@ -213,9 +224,11 @@ public sealed partial class ImportJobService(
 			else
 			{
 				var url = HighlightSourceResolver.ResolveInstagramHighlightUrl(source.Url!);
-				found = string.IsNullOrWhiteSpace(job.BrowserSource)
-					? await fetcher.FetchCandidatesAsync(url, null)
-					: await fetcher.FetchCandidatesViaYtDlpAsync(url, job.BrowserSource);
+				found = !string.IsNullOrWhiteSpace(job.InstagramCookieHeader)
+					? await fetcher.FetchCandidatesViaYtDlpWithCookieHeaderAsync(url, job.InstagramCookieHeader)
+					: string.IsNullOrWhiteSpace(job.BrowserSource)
+						? await fetcher.FetchCandidatesAsync(url, null)
+						: await fetcher.FetchCandidatesViaYtDlpAsync(url, job.BrowserSource);
 			}
 
 			candidates.AddRange(found);
@@ -225,7 +238,7 @@ public sealed partial class ImportJobService(
 
 		var distinct = candidates.DistinctBy(candidate => candidate.NormalizedKey).ToList();
 		if (distinct.Count == 0)
-			throw new InvalidOperationException("Could not find track information in the provided sources. If the highlight is private, try browser authentication.");
+			throw new InvalidOperationException("Could not find track information in the provided sources. If the highlight is private, try pasting a fresh Cookie header or browser authentication.");
 
 		lock (job.SyncRoot)
 		{
@@ -421,6 +434,7 @@ public sealed partial class ImportJobService(
 		}
 
 		NormalizeBrowserSource(input.BrowserSource);
+		NormalizeCookieHeader(input.InstagramCookieHeader);
 	}
 
 	private static void ValidateInstagramSource(string source)
@@ -445,7 +459,24 @@ public sealed partial class ImportJobService(
 		var trimmed = browserSource.Trim();
 		if (trimmed.Length > 500 || trimmed.Contains('\n') || !BrowserSourceRegex().IsMatch(trimmed))
 			throw new ArgumentException("Browser source can only be brave, firefox, chrome, chromium, edge or safari.");
-		return trimmed;
+		return BrowserCookieLoader.NormalizeBrowserSpec(trimmed);
+	}
+
+	private static string? NormalizeCookieHeader(string? cookieHeader)
+	{
+		if (string.IsNullOrWhiteSpace(cookieHeader))
+			return null;
+		var trimmed = cookieHeader.Trim();
+		if (trimmed.Length > 32_000)
+			throw new ArgumentException("Instagram cookies must be 32,000 characters or fewer.");
+
+		var normalized = CookieFileReader.ParseAsCookieHeader(trimmed);
+		if (string.IsNullOrWhiteSpace(normalized) || normalized.Length > 32_000 || normalized.Contains('\r') || normalized.Contains('\n'))
+			throw new ArgumentException("Paste a valid Cookie header or Netscape cookie export.");
+		if (!normalized.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+			    .Any(pair => pair.StartsWith("sessionid=", StringComparison.OrdinalIgnoreCase)))
+			throw new ArgumentException("Pasted Instagram cookies must include a sessionid cookie.");
+		return normalized;
 	}
 
 	private static string FriendlyMessage(Exception exception)
@@ -476,7 +507,11 @@ public sealed partial class ImportJobService(
 		public required DateTimeOffset CreatedAt { get; init; }
 		public required DateTimeOffset UpdatedAt { get; set; }
 		public required List<ImportSourceInput> Sources { get; init; }
+
 		public string? BrowserSource { get; init; }
+
+		// Deliberately excluded from StoredImportJob so pasted session data is never persisted.
+		public string? InstagramCookieHeader { get; set; }
 		public required ImportStatus Status { get; set; }
 		public required int Progress { get; set; }
 		public required string StatusMessage { get; set; }

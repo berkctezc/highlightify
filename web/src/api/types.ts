@@ -84,4 +84,5 @@ export type StartImportInput = {
   sources: string[]
   files: File[]
   browserSource: string
+    instagramCookie: string
 }

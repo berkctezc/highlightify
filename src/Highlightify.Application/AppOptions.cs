@@ -102,7 +102,10 @@ public sealed record AppOptions(
 		}
 
 		if (!string.IsNullOrWhiteSpace(instagramCookiesFromBrowser))
+		{
+			instagramCookiesFromBrowser = BrowserCookieLoader.NormalizeBrowserSpec(instagramCookiesFromBrowser);
 			instagramCookieHeader = null;
+		}
 
 		return new AppOptions(
 			highlightSources,

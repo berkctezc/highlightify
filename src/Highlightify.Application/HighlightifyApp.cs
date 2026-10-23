@@ -28,6 +28,17 @@ public static class HighlightifyApp
 		var allCandidates = new List<TrackCandidate>();
 		var browserSpec = options.InstagramCookiesFromBrowser
 		                  ?? BrowserCookieLoader.InferFirefoxBrowserSpec(options.InstagramCookiePath);
+		var cookieHeader = options.InstagramCookieHeader;
+		try
+		{
+			if (!string.IsNullOrWhiteSpace(browserSpec))
+				cookieHeader = BrowserCookieLoader.ReadInstagramCookieHeader(browserSpec);
+		}
+		catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or UnauthorizedAccessException or NotSupportedException)
+		{
+			await Console.Error.WriteLineAsync($"Instagram browser authentication failed: {ex.Message}");
+			return 4;
+		}
 
 		foreach (var source in options.HighlightSources)
 		{
@@ -39,18 +50,13 @@ public static class HighlightifyApp
 					var html = await File.ReadAllTextAsync(source);
 					candidates = instagram.ExtractCandidates(html, source);
 				}
-				else if (!string.IsNullOrWhiteSpace(browserSpec))
-				{
-					var highlightUrl = HighlightSourceResolver.ResolveInstagramHighlightUrl(source);
-					candidates = await instagram.FetchCandidatesViaYtDlpAsync(highlightUrl, browserSpec);
-				}
 				else
 				{
 					var highlightUrl = HighlightSourceResolver.ResolveInstagramHighlightUrl(source);
-					candidates = await instagram.FetchCandidatesAsync(highlightUrl, options.InstagramCookieHeader);
+					candidates = await instagram.FetchCandidatesAsync(highlightUrl, cookieHeader);
 				}
 			}
-			catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException)
+			catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or UnauthorizedAccessException)
 			{
 				await Console.Error.WriteLineAsync($"Instagram fetch failed for '{source}': {ex.Message}");
 				return 4;
@@ -61,9 +67,9 @@ public static class HighlightifyApp
 
 		if (allCandidates.Count == 0)
 		{
-			await Console.Error.WriteLineAsync(options.InstagramCookieHeader is null
+			await Console.Error.WriteLineAsync(string.IsNullOrWhiteSpace(cookieHeader)
 				? "No songs were found. If the account is private, pass --instagram-cookie, --instagram-cookie-file, or --instagram-cookie-path so Instagram can return the highlight data."
-				: "No songs were found in the supplied highlights.");
+				: "Instagram returned the highlight without any recognizable music metadata. The highlight may not use an Instagram music sticker; if it does, sign out and back in to Instagram, export a fresh cookies.txt file from the same browser profile, and retry.");
 			return 2;
 		}
 
@@ -146,7 +152,7 @@ public static class HighlightifyApp
 		                    --instagram-cookie <value>    Raw Cookie header for Instagram requests
 		                    --instagram-cookie-file <f>   File containing raw Cookie header or Netscape cookie lines
 		                    --instagram-cookie-path <f>   Firefox profile directory or cookies.sqlite file
-		                    --instagram-cookies-from-browser <spec>  Browser source like firefox or firefox:/path/to/profile (preferred)
+		                    --instagram-cookies-from-browser <spec>  Firefox profile like firefox:/path/to/profile
 
 		                  Spotify output:
 		                    --playlist-name <name>       Playlist name to create or reuse; defaults to "Instagram Highlights"

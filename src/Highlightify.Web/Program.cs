@@ -239,7 +239,8 @@ api.MapPost("/imports", async (
 
 	var id = jobs.Start(SessionIdentity.GetOrCreate(context), new StartImportInput(
 		sources,
-		form["browserSource"].FirstOrDefault()));
+		form["browserSource"].FirstOrDefault(),
+		form["instagramCookie"].FirstOrDefault()));
 	return Results.Accepted($"/api/imports/{id}", new ImportCreatedResponse(id));
 }).DisableAntiforgery();
 
@@ -275,7 +276,7 @@ app.MapFallback(async context =>
 	await context.Response.WriteAsync("Highlightify frontend build was not found. Run 'pnpm build' in the web directory.");
 });
 
-app.Run();
+await app.RunAsync();
 return;
 
 static string ResolveFrontendUrl(HttpContext context, SpotifySettings settings, IWebHostEnvironment environment)
@@ -295,15 +296,6 @@ static string? FindExecutable(string name)
 		? (Environment.GetEnvironmentVariable("PATHEXT")?.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [".exe", ".cmd", ".bat"])
 		: [string.Empty];
 
-	foreach (var directory in path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-	{
-		foreach (var extension in extensions)
-		{
-			var candidate = Path.Combine(directory, name.EndsWith(extension, StringComparison.OrdinalIgnoreCase) ? name : $"{name}{extension}");
-			if (File.Exists(candidate))
-				return candidate;
-		}
-	}
-
-	return null;
+	return (from directory in path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) from extension in extensions select Path.Combine(directory, name.EndsWith(extension, StringComparison.OrdinalIgnoreCase) ? name : $"{name}{extension}"))
+		.FirstOrDefault(File.Exists);
 }
